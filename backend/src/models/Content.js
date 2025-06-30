@@ -73,6 +73,27 @@ const contentSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  isRecycled: {
+    type: Boolean,
+    default: false
+  },
+  recycleAt: {
+    type: Date,
+    default: null
+  },
+  recycleCount: {
+    type: Number,
+    default: 0
+  },
+  predictedDifficulty: {
+    type: String,
+    enum: ['easy', 'normal', 'hard'],
+    default: 'normal'
+  },
+  predictedAccuracy: {
+    type: Number,
+    default: null
   }
 }, {
   timestamps: true

@@ -18,6 +18,8 @@ export interface Vote {
   contentId: string
   userId?: string
   isReal: boolean
+  isCorrect?: boolean
+  pointsEarned?: number
   createdAt: Date
 }
 
@@ -29,7 +31,9 @@ export interface User {
   accuracy: number
   totalVotes: number
   correctVotes: number
-  badges: Badge[]
+  consecutiveCorrect: number
+  maxConsecutiveCorrect: number
+  badges: UserBadge[]
   createdAt: Date
 }
 
@@ -38,7 +42,36 @@ export interface Badge {
   name: string
   description: string
   icon: string
+  category: 'accuracy' | 'participation' | 'achievement' | 'special'
+  condition: {
+    type: 'totalVotes' | 'correctVotes' | 'accuracy' | 'consecutiveCorrect' | 'uploadCount' | 'points'
+    value: number
+    operator: 'gte' | 'lte' | 'eq'
+  }
+  pointsReward: number
+  isActive: boolean
+}
+
+export interface UserBadge {
+  badge: Badge
   earnedAt: Date
+}
+
+export interface VoteStats {
+  totalVotes: number
+  correctVotes: number
+  accuracy: number
+  points: number
+  consecutiveCorrect: number
+  maxConsecutiveCorrect: number
+  last7Days: DailyStats[]
+}
+
+export interface DailyStats {
+  date: string
+  totalVotes: number
+  correctVotes: number
+  accuracy: number
 }
 
 export interface AITool {
@@ -47,4 +80,30 @@ export interface AITool {
   description: string
   website: string
   category: 'image' | 'video' | 'text' | 'audio'
+}
+
+export interface CommentLike {
+  user: User;
+  comment: string;
+  createdAt: Date;
+}
+
+export interface RecycledContent {
+  id: string;
+  title: string;
+  isRecycled: boolean;
+  recycleAt: Date;
+  recycleCount: number;
+  predictedDifficulty?: 'easy' | 'normal' | 'hard';
+  predictedAccuracy?: number;
+}
+
+export interface FollowUser {
+  id: string;
+  username: string;
+}
+
+export interface UserWithFollow extends User {
+  followers: FollowUser[];
+  following: FollowUser[];
 } 

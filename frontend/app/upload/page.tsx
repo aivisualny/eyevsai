@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { uploadContent, getMe } from '../../lib/api';
+import { uploadContent, getMe, analyzeContentAI } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
@@ -20,6 +20,8 @@ export default function UploadPage() {
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState('');
+  const [aiAnalysis, setAiAnalysis] = useState<{ predictedDifficulty?: string; predictedAccuracy?: number } | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -92,6 +94,35 @@ export default function UploadPage() {
       [e.target.name]: e.target.value
     });
   };
+
+  // AI 난이도 분석 호출
+  const analyzeAI = async (file = selectedFile, desc = formData.description) => {
+    if (!file && !desc) return;
+    setAnalyzing(true);
+    try {
+      let imageUrl = '';
+      if (file) {
+        // 파일을 임시 URL로 변환 (실제 업로드 전 분석)
+        imageUrl = URL.createObjectURL(file);
+      }
+      const result = await analyzeContentAI({ imageUrl, text: desc });
+      setAiAnalysis(result);
+    } catch (e) {
+      setAiAnalysis(null);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  // 파일/설명 변경 시 AI 분석
+  useEffect(() => {
+    if (selectedFile || formData.description) {
+      analyzeAI(selectedFile, formData.description);
+    } else {
+      setAiAnalysis(null);
+    }
+    // eslint-disable-next-line
+  }, [selectedFile, formData.description]);
 
   if (loading) {
     return (
@@ -248,6 +279,26 @@ export default function UploadPage() {
                 </p>
               )}
             </div>
+
+            {/* AI 난이도 분석 결과 표시 */}
+            {(analyzing || aiAnalysis) && (
+              <div className="bg-blue-50 border border-blue-200 rounded px-4 py-3 mb-2 flex items-center gap-4">
+                {analyzing ? (
+                  <span className="text-blue-600 text-sm">AI 분석 중...</span>
+                ) : aiAnalysis && (
+                  <>
+                    <span className="text-blue-700 font-semibold">예상 난이도:</span>
+                    <span className="font-bold text-lg">
+                      {aiAnalysis.predictedDifficulty === 'easy' && '쉬움'}
+                      {aiAnalysis.predictedDifficulty === 'normal' && '보통'}
+                      {aiAnalysis.predictedDifficulty === 'hard' && '어려움'}
+                    </span>
+                    <span className="text-blue-700 font-semibold ml-4">예상 정답률:</span>
+                    <span className="font-bold text-lg">{aiAnalysis.predictedAccuracy}%</span>
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="flex space-x-4">
               <Button

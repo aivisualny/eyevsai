@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { getContent, getComments, postComment, deleteComment, getMe } from '../../../lib/api';
+import { getContent, getComments, postComment, deleteComment, getMe, likeComment, unlikeComment, getCommentLikes } from '../../../lib/api';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 
@@ -17,6 +17,10 @@ export default function ContentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 댓글 좋아요 상태 관리
+  const [likedComments, setLikedComments] = useState<{ [key: string]: boolean }>({});
+  const [likesCount, setLikesCount] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
     loadContent();
@@ -35,10 +39,27 @@ export default function ContentDetailPage() {
     }
   };
 
+  // 댓글 좋아요 정보 불러오기
+  const loadCommentLikes = async (commentsList = comments) => {
+    const newLikesCount: { [key: string]: number } = {};
+    const newLiked: { [key: string]: boolean } = {};
+    for (const c of commentsList) {
+      const likesData = await getCommentLikes(c._id);
+      newLikesCount[c._id] = likesData.count;
+      if (user && likesData.users.some((u: any) => u._id === user.id)) {
+        newLiked[c._id] = true;
+      }
+    }
+    setLikesCount(newLikesCount);
+    setLikedComments(newLiked);
+  };
+
+  // 댓글 불러올 때마다 좋아요 정보도 갱신
   const loadComments = async () => {
     try {
       const data = await getComments(contentId);
       setComments(data.comments);
+      setTimeout(() => loadCommentLikes(data.comments), 0);
     } catch (error) {}
   };
 
@@ -79,6 +100,20 @@ export default function ContentDetailPage() {
     } catch (error: any) {
       alert(error.response?.data?.error || '댓글 삭제 실패');
     }
+  };
+
+  // 댓글 좋아요/취소
+  const handleLike = async (commentId: string) => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    if (likedComments[commentId]) {
+      await unlikeComment(commentId);
+    } else {
+      await likeComment(commentId);
+    }
+    loadCommentLikes();
   };
 
   if (loading) {
@@ -185,14 +220,24 @@ export default function ContentDetailPage() {
                     </div>
                     <div className="text-gray-700 text-sm mt-1">{c.text}</div>
                   </div>
-                  {user && c.user && user.id === c.user._id && (
+                  <div className="flex flex-col items-center ml-2">
                     <button
-                      className="text-xs text-red-400 hover:text-red-600 ml-2 opacity-0 group-hover:opacity-100"
-                      onClick={() => handleDeleteComment(c._id)}
+                      className={`text-xs px-2 py-1 rounded-full border ${likedComments[c._id] ? 'bg-pink-100 text-pink-600 border-pink-300' : 'bg-gray-100 text-gray-500 border-gray-200'} hover:bg-pink-200`}
+                      onClick={() => handleLike(c._id)}
+                      disabled={!user}
+                      title={user ? (likedComments[c._id] ? '좋아요 취소' : '좋아요') : '로그인 필요'}
                     >
-                      삭제
+                      ♥ {likesCount[c._id] || 0}
                     </button>
-                  )}
+                    {user && c.user && user.id === c.user._id && (
+                      <button
+                        className="text-xs text-red-400 hover:text-red-600 mt-1 opacity-0 group-hover:opacity-100"
+                        onClick={() => handleDeleteComment(c._id)}
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))
             )}

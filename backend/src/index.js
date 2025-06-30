@@ -27,6 +27,9 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/content', require('./routes/content'));
 app.use('/api/votes', require('./routes/votes'));
+app.use('/api/badges', require('./routes/badges'));
+app.use('/api/comments', require('./routes/comments'));
+app.use('/api/users', require('./routes/users'));
 app.use('/api/admin', require('./routes/admin'));
 
 // Health check
@@ -56,6 +59,10 @@ app.use('*', (req, res) => {
 connectDB().then(async () => {
   // 시드 데이터 생성
   await seedData();
+  
+  // 기본 뱃지 생성
+  const BadgeSystem = require('./utils/badgeSystem');
+  await BadgeSystem.createDefaultBadges();
   
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

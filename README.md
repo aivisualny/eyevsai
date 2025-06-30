@@ -1,4 +1,4 @@
-# EyeVSAI - 당신의 눈은 AI보다 정확한가?
+# EyeVSAI - AI 콘텐츠 감별 플랫폼
 
 AI로 생성된 콘텐츠와 실제 콘텐츠를 구분하는 감별 커뮤니티 플랫폼입니다.
 
@@ -14,179 +14,224 @@ EyeVSAI는 사용자들이 AI 생성 콘텐츠와 실제 콘텐츠를 구분하�
 - **보상 시스템**: 정확한 판단에 대한 포인트와 뱃지 제공
 - **데이터 수집**: 사람의 판단 기반 데이터를 AI 개선에 활용
 
+## 🚀 3차 MVP 핵심 기능
+
+### 🏅 보상 시스템
+- **뱃지 시스템**: 정답률, 투표 수, 연속 정답 등에 따른 뱃지 획득
+- **포인트 시스템**: 정답 시 10점, 오답 시 1점 획득
+- **랭킹 시스템**: 정답률/포인트/투표 수별 정렬 지원
+
+### 📊 정답률 피드백
+- **개인 통계**: 맞힌 콘텐츠/틀린 콘텐츠 목록 제공
+- **정답률 추이**: 최근 7일간 정답률 변화 그래프
+- **투표 히스토리**: 날짜별 필터링 및 상세 분석
+
+### 🧭 히스토리 / 리텐션
+- **투표 히스토리**: 내가 투표한 모든 콘텐츠 목록
+- **정답/오답 분류**: 필터링을 통한 맞힌/틀린 콘텐츠 확인
+- **연속 정답 추적**: 최대 연속 정답 기록 관리
+
+### 🗣️ 커뮤니티성 강화
+- **댓글 시스템**: 콘텐츠별 감상평 및 토론
+- **정답률 시각화**: 실시간 투표 결과 표시
+- **랭킹 경쟁**: 사용자 간 정답률 비교
+
+## 📱 주요 페이지
+
+### 1. 메인페이지
+- **오늘의 인기 콘텐츠** 섹션
+- **정답률 랭킹** 미리보기
+- **내 뱃지** 표시
+- **개인 통계** 요약
+
+### 2. 투표하기 페이지
+- **정답률 시각화**: AI/Real 투표 비율 실시간 표시
+- **뱃지 획득 알림**: 새로운 뱃지 획득 시 팝업 알림
+- **투표 결과 피드백**: 정답/오답 즉시 확인
+
+### 3. 마이페이지
+- **개요**: 통계 카드 및 최근 7일 정답률 차트
+- **맞힌 콘텐츠**: 정답을 맞춘 콘텐츠 목록
+- **틀린 콘텐츠**: 오답을 선택한 콘텐츠 목록
+- **획득한 뱃지**: 뱃지 상세 정보 및 획득일
+
+### 4. 통계 페이지
+- **전체 통계**: 플랫폼 전체 현황
+- **개인 통계**: 로그인 사용자 개인 분석
+- **생성앱별 통계**: AI 도구별 정답률 분석
+- **어려운 콘텐츠 TOP 10**: 낮은 정답률 콘텐츠 목록
+
+### 5. 랭킹 페이지
+- **TOP 3**: 메달 디자인으로 상위 3명 표시
+- **정렬 옵션**: 정답률/포인트/투표 수별 정렬
+- **뱃지 표시**: 사용자별 획득 뱃지 표시
+- **급상승 유저**: 최근 성과 향상 사용자
+
+## 🛠️ 기술 스택
+
+### Backend
+- **Node.js** + **Express.js**
+- **MongoDB** + **Mongoose**
+- **JWT** 인증
+- **Multer** 파일 업로드
+
+### Frontend
+- **Next.js 14** + **TypeScript**
+- **Tailwind CSS**
+- **Framer Motion**
+- **Axios** API 통신
+
 ## 🏗️ 프로젝트 구조
 
 ```
 eyevsai/
-├── frontend/              # Next.js 프론트엔드
-│   ├── app/              # Next.js App Router
-│   ├── components/       # React 컴포넌트
-│   ├── lib/             # 유틸리티 및 설정
-│   ├── hooks/           # 커스텀 훅
-│   ├── types/           # TypeScript 타입
-│   └── data/            # 목업 데이터
-├── backend/              # Express.js 백엔드
-│   ├── src/             # 소스 코드
-│   ├── routes/          # API 라우트
-│   ├── models/          # 데이터베이스 모델
-│   ├── middleware/      # 미들웨어
-│   └── utils/           # 유틸리티 함수
-├── docs/                # 프로젝트 문서
-│   ├── project-plan.md  # 프로젝트 기획서
-│   ├── api.md          # API 문서
-│   └── deployment.md   # 배포 가이드
-└── package.json         # 모노레포 설정
+├── backend/
+│   ├── src/
+│   │   ├── models/
+│   │   │   ├── User.js          # 사용자 모델 (뱃지, 통계 추가)
+│   │   │   ├── Vote.js          # 투표 모델 (정답률 추적)
+│   │   │   ├── Badge.js         # 뱃지 모델 (신규)
+│   │   │   └── Comment.js       # 댓글 모델
+│   │   ├── routes/
+│   │   │   ├── votes.js         # 투표 API (뱃지 시스템 연동)
+│   │   │   ├── badges.js        # 뱃지 API (신규)
+│   │   │   └── ...
+│   │   └── utils/
+│   │       └── badgeSystem.js   # 뱃지 시스템 로직 (신규)
+│   └── package.json
+├── frontend/
+│   ├── app/
+│   │   ├── mypage/              # 마이페이지 (완전 새로 구현)
+│   │   ├── stats/               # 통계 페이지 (업데이트)
+│   │   ├── ranking/             # 랭킹 페이지 (업데이트)
+│   │   ├── vote/[id]/           # 투표 페이지 (뱃지 알림 추가)
+│   │   └── page.tsx             # 메인페이지 (뱃지, 랭킹 추가)
+│   ├── types/
+│   │   └── content.ts           # 타입 정의 (뱃지, 통계 추가)
+│   └── lib/
+│       └── api.ts               # API 클라이언트 (뱃지, 통계 추가)
+└── README.md
 ```
 
-## 🚀 기술 스택
+## 🎯 뱃지 시스템
 
-### Frontend
-- **Framework**: Next.js 14, React 18
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **Animations**: Framer Motion
+### 기본 뱃지
+- **🎯 첫 투표**: 첫 번째 투표 완료
+- **🔍 AI 탐정가**: 정답률 70% 이상
+- **👑 AI 마스터**: 정답률 90% 이상
+- **🔥 열정적인 참여자**: 100번 투표 완료
+- **⚡ 연속 정답왕**: 연속 10번 정답
+- **📸 콘텐츠 크리에이터**: 첫 콘텐츠 업로드
 
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MongoDB (Mongoose)
-- **Authentication**: JWT
-- **File Upload**: Multer
-- **Validation**: Joi
+### 뱃지 조건
+- **정답률 기반**: accuracy >= 70, 90
+- **참여도 기반**: totalVotes >= 1, 100
+- **성과 기반**: consecutiveCorrect >= 10
+- **활동 기반**: uploadCount >= 1
 
-## 📦 설치 및 실행
+## 🚀 실행 방법
 
-### 필수 요구사항
-
-- Node.js 18.0.0 이상
-- npm 또는 yarn
-- MongoDB (로컬 또는 클라우드)
-
-### 전체 프로젝트 실행
-
+### 1. 환경 설정
 ```bash
-# 저장소 클론
-git clone https://github.com/your-username/eyevsai.git
-cd eyevsai
+# Backend
+cd backend
+cp env.example .env
+# .env 파일에서 데이터베이스 설정
 
-# 의존성 설치 (모든 워크스페이스)
+# Frontend
+cd frontend
+# .env.local 파일 생성 (필요시)
+```
+
+### 2. 의존성 설치
+```bash
+# Backend
+cd backend
 npm install
 
-# 개발 서버 실행 (프론트엔드 + 백엔드)
-npm run dev
-```
-
-### 개별 실행
-
-```bash
-# 프론트엔드만 실행 (포트 3000)
-npm run dev:frontend
-
-# 백엔드만 실행 (포트 5000)
-npm run dev:backend
-```
-
-### 빌드
-
-```bash
-# 전체 빌드
-npm run build
-
-# 개별 빌드
-npm run build:frontend
-npm run build:backend
-```
-
-## 🌐 접속 정보
-
-- **프론트엔드**: http://localhost:3000
-- **백엔드 API**: http://localhost:5000
-- **API Health Check**: http://localhost:5000/health
-
-## 🎯 구현 단계
-
-### 1차 구현 (완료) ✅
-- ✅ 프론트엔드 MVP 완성
-- ✅ 프로젝트 구조 정리
-- ✅ 모노레포 설정
-- ✅ 기본 백엔드 서버
-
-### 2차 구현 (진행중) 🔄
-- 🔄 사용자 인증 시스템
-- 🔄 데이터베이스 연동
-- 🔄 이미지 업로드 및 저장
-- 🔄 투표 결과 저장
-- 🔄 API 엔드포인트 구현
-
-### 3차 구현 (예정) 🔄
-- 🔄 포인트 및 뱃지 시스템
-- 🔄 랭킹 페이지
-- 🔄 통계 대시보드
-- 🔄 관리자 패널
-- 🔄 실시간 기능
-
-## 📚 문서
-
-자세한 문서는 [docs](./docs/) 폴더를 참조하세요:
-
-- [프로젝트 기획서](./docs/project-plan.md)
-- [API 문서](./docs/api.md)
-- [배포 가이드](./docs/deployment.md)
-- [기술 스택](./docs/tech-stack.md)
-
-## 🧪 개발
-
-### 개발 환경 설정
-
-```bash
-# 백엔드 환경변수 설정
-cp backend/env.example backend/.env
-# .env 파일을 편집하여 필요한 값들을 설정
-
-# 프론트엔드 개발
+# Frontend
 cd frontend
-npm run dev
+npm install
+```
 
-# 백엔드 개발
+### 3. 서버 실행
+```bash
+# Backend (포트 5000)
 cd backend
 npm run dev
+
+# Frontend (포트 3000)
+cd frontend
+npm run dev
 ```
 
-### 테스트
+### 4. 접속
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
+- Health Check: http://localhost:5000/api/health
 
-```bash
-# 전체 테스트
-npm test
+## 📊 API 엔드포인트
 
-# 개별 테스트
-npm test --workspace=frontend
-npm test --workspace=backend
-```
+### 뱃지 관련
+- `GET /api/badges` - 모든 뱃지 조회
+- `GET /api/badges/my` - 내 뱃지 조회
+- `GET /api/badges/:id` - 뱃지 상세 정보
+
+### 투표 통계
+- `GET /api/votes/my/stats` - 내 투표 통계
+- `GET /api/votes/my?isCorrect=true` - 정답/오답 필터링
+
+### 기존 API
+- `POST /api/votes` - 투표 (뱃지 시스템 연동)
+- `GET /api/auth/me` - 내 정보 (뱃지 포함)
+- `GET /api/admin/ranking` - 랭킹 (뱃지 포함)
+
+## 🎨 주요 UI/UX 개선사항
+
+### 1. 뱃지 획득 알림
+- 투표 완료 시 새로운 뱃지 획득 시 모달 팝업
+- 뱃지 아이콘, 이름, 설명, 포인트 보상 표시
+
+### 2. 정답률 시각화
+- 투표 페이지에서 실시간 AI/Real 비율 표시
+- 진행바 형태로 직관적인 시각화
+
+### 3. 통계 대시보드
+- 개인/전체 통계 통합 표시
+- 최근 7일 정답률 차트
+- 어려운 콘텐츠 TOP 10
+
+### 4. 랭킹 시스템
+- TOP 3 메달 디자인
+- 정렬 옵션 (정답률/포인트/투표 수)
+- 뱃지 표시 및 급상승 유저 섹션
+
+## 🔮 향후 계획
+
+### 4차 MVP 예정 기능
+- **댓글 투표**: 댓글 내 좋아요 시스템
+- **콘텐츠 리사이클**: 낮은 정답률 콘텐츠 재투표
+- **AI 분석**: 업로드 시 난이도 자동 측정
+- **소셜 기능**: 사용자 간 팔로우/언팔로우
+
+### 고급 기능
+- **실시간 알림**: 뱃지 획득, 랭킹 변화 알림
+- **시즌제**: 정기적인 랭킹 리셋 및 시즌 보상
+- **팀 시스템**: 사용자 그룹별 경쟁
+- **AI 분석**: 개인별 약점 분석 및 개선 제안
+
+## 📝 라이선스
+
+MIT License
 
 ## 🤝 기여하기
 
-1. 이 저장소를 포크합니다
-2. 기능 브랜치를 생성합니다 (`git checkout -b feature/amazing-feature`)
-3. 변경사항을 커밋합니다 (`git commit -m 'Add amazing feature'`)
-4. 브랜치에 푸시합니다 (`git push origin feature/amazing-feature`)
-5. Pull Request를 생성합니다
-
-### 개발 가이드라인
-
-- **프론트엔드**: TypeScript, 함수형 컴포넌트, Tailwind CSS
-- **백엔드**: Express.js, MongoDB, JWT 인증
-- **코드 스타일**: ESLint 규칙 준수
-- **커밋 메시지**: 명확하고 설명적인 메시지
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다.
-
-## 📞 연락처
-
-프로젝트에 대한 문의사항이 있으시면 이슈를 생성해주세요.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-**"당신의 투표가 AI를 더 똑똑하게 만듭니다"** 🚀
+**EyeVSAI** - 당신의 눈은 AI보다 정확한가? 👁️

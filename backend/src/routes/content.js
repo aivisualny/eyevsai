@@ -349,4 +349,46 @@ router.delete('/comments/:commentId', auth, async (req, res) => {
   }
 });
 
+// 콘텐츠 재투표 전환
+router.post('/:id/recycle', auth, async (req, res) => {
+  try {
+    const content = await Content.findById(req.params.id);
+    if (!content) return res.status(404).json({ error: '콘텐츠를 찾을 수 없습니다.' });
+    if (content.isRecycled) return res.status(400).json({ error: '이미 재투표 상태입니다.' });
+    content.isRecycled = true;
+    content.recycleAt = new Date();
+    content.recycleCount = (content.recycleCount || 0) + 1;
+    await content.save();
+    res.json({ success: true, content });
+  } catch (err) {
+    res.status(500).json({ error: '재투표 전환 중 오류' });
+  }
+});
+
+// 재투표 대상 콘텐츠 목록
+router.get('/recycle', async (req, res) => {
+  try {
+    const recycled = await Content.find({ isRecycled: true }).sort({ recycleAt: -1 });
+    res.json({ contents: recycled });
+  } catch (err) {
+    res.status(500).json({ error: '재투표 콘텐츠 조회 오류' });
+  }
+});
+
+// AI 난이도 분석 (샘플)
+router.post('/analyze', auth, async (req, res) => {
+  try {
+    // 실제 AI 분석 로직 대신 샘플 난이도/정답률 반환
+    // (실제 구현 시 외부 AI API 연동)
+    const { imageUrl, text } = req.body;
+    // 샘플: 랜덤 난이도/정답률
+    const levels = ['easy', 'normal', 'hard'];
+    const predictedDifficulty = levels[Math.floor(Math.random() * levels.length)];
+    const predictedAccuracy = Math.floor(Math.random() * 100);
+    res.json({ predictedDifficulty, predictedAccuracy });
+  } catch (err) {
+    res.status(500).json({ error: 'AI 분석 오류' });
+  }
+});
+
 module.exports = router; 

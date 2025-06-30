@@ -111,4 +111,87 @@ export async function postComment(contentId: string, text: string) {
 export async function deleteComment(commentId: string) {
   const res = await axios.delete(`${API_BASE}/content/comments/${commentId}`, { headers: getAuthHeaders() });
   return res.data;
+}
+
+// 댓글 좋아요/취소/조회
+export async function likeComment(commentId: string) {
+  const res = await axios.post(`${API_BASE}/comments/${commentId}/like`, {}, { headers: getAuthHeaders() });
+  return res.data;
+}
+export async function unlikeComment(commentId: string) {
+  const res = await axios.delete(`${API_BASE}/comments/${commentId}/like`, { headers: getAuthHeaders() });
+  return res.data;
+}
+export async function getCommentLikes(commentId: string) {
+  const res = await axios.get(`${API_BASE}/comments/${commentId}/likes`);
+  return res.data;
+}
+
+// 콘텐츠 리사이클
+export async function recycleContent(contentId: string) {
+  const res = await axios.post(`${API_BASE}/content/${contentId}/recycle`, {}, { headers: getAuthHeaders() });
+  return res.data;
+}
+export async function getRecycledContents() {
+  const res = await axios.get(`${API_BASE}/content/recycle`);
+  return res.data;
+}
+
+// AI 난이도 분석
+export async function analyzeContentAI(data: { imageUrl?: string; text?: string }) {
+  const res = await axios.post(`${API_BASE}/content/analyze`, data, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+// 팔로우/언팔로우
+export async function followUser(userId: string) {
+  const res = await axios.post(`${API_BASE}/users/${userId}/follow`, {}, { headers: getAuthHeaders() });
+  return res.data;
+}
+export async function unfollowUser(userId: string) {
+  const res = await axios.delete(`${API_BASE}/users/${userId}/follow`, { headers: getAuthHeaders() });
+  return res.data;
+}
+export async function getFollowers(userId: string) {
+  const res = await axios.get(`${API_BASE}/users/${userId}/followers`);
+  return res.data;
+}
+export async function getFollowing(userId: string) {
+  const res = await axios.get(`${API_BASE}/users/${userId}/following`);
+  return res.data;
+}
+
+// 뱃지 관련 API
+export async function getAllBadges() {
+  const res = await axios.get(`${API_BASE}/badges`);
+  return res.data;
+}
+
+export async function getMyBadges() {
+  const res = await axios.get(`${API_BASE}/badges/my`, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+export async function getBadgeDetail(id: string) {
+  const res = await axios.get(`${API_BASE}/badges/${id}`);
+  return res.data;
+}
+
+// 투표 통계 관련 API
+export async function getMyVoteStats() {
+  const res = await axios.get(`${API_BASE}/votes/my/stats`, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+// 내 투표 내역 (필터링 지원)
+export async function getMyVotesFiltered(params?: {
+  isCorrect?: boolean;
+  page?: number;
+  limit?: number;
+}) {
+  const res = await axios.get(`${API_BASE}/votes/my`, { 
+    headers: getAuthHeaders(),
+    params 
+  });
+  return res.data;
 } 

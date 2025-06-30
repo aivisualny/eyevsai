@@ -46,7 +46,55 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
+  },
+  badges: [{
+    badge: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Badge'
+    },
+    earnedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  accuracyHistory: [{
+    date: {
+      type: Date,
+      default: Date.now
+    },
+    accuracy: {
+      type: Number,
+      default: 0
+    },
+    totalVotes: {
+      type: Number,
+      default: 0
+    },
+    correctVotes: {
+      type: Number,
+      default: 0
+    }
+  }],
+  consecutiveCorrect: {
+    type: Number,
+    default: 0
+  },
+  maxConsecutiveCorrect: {
+    type: Number,
+    default: 0
+  },
+  lastVoteDate: {
+    type: Date,
+    default: null
+  },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 }, {
   timestamps: true
 });

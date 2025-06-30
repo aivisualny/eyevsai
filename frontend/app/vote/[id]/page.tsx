@@ -6,15 +6,25 @@ import { getContent, voteContent } from '../../../lib/api';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 
+interface Badge {
+  name: string;
+  description: string;
+  icon: string;
+  pointsReward: number;
+}
+
 export default function VotePage() {
   const params = useParams();
   const contentId = params.id as string;
   
-  const [content, setContent] = useState(null);
+  const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
   const [error, setError] = useState('');
   const [hasVoted, setHasVoted] = useState(false);
+  const [voteResult, setVoteResult] = useState<any>(null);
+  const [showBadgeAlert, setShowBadgeAlert] = useState(false);
+  const [newBadges, setNewBadges] = useState<Badge[]>([]);
 
   useEffect(() => {
     loadContent();
@@ -41,15 +51,26 @@ export default function VotePage() {
 
     setVoting(true);
     try {
-      await voteContent({ contentId, vote });
+      const result = await voteContent({ contentId, vote });
       setHasVoted(true);
-      alert('투표가 완료되었습니다!');
-      window.location.href = '/';
+      setVoteResult(result);
+      
+      // 새로운 뱃지가 있으면 알림 표시
+      if (result.newBadges && result.newBadges.length > 0) {
+        setNewBadges(result.newBadges);
+        setShowBadgeAlert(true);
+      }
     } catch (error: any) {
       setError(error.response?.data?.error || '투표에 실패했습니다.');
     } finally {
       setVoting(false);
     }
+  };
+
+  const calculateAccuracy = () => {
+    if (!content || content.totalVotes === 0) return 0;
+    const correctVotes = content.isAI ? content.votes.ai : content.votes.real;
+    return Math.round((correctVotes / content.totalVotes) * 100);
   };
 
   if (loading) {
@@ -89,6 +110,35 @@ export default function VotePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* 뱃지 획득 알림 */}
+        {showBadgeAlert && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 max-w-md mx-4">
+              <div className="text-center">
+                <div className="text-4xl mb-4">🎉</div>
+                <h3 className="text-xl font-bold mb-4">새로운 뱃지를 획득했습니다!</h3>
+                <div className="space-y-3 mb-6">
+                  {newBadges.map((badge, index) => (
+                    <div key={index} className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">{badge.icon}</div>
+                        <div className="flex-1">
+                          <div className="font-bold text-gray-800">{badge.name}</div>
+                          <div className="text-sm text-gray-600">{badge.description}</div>
+                        </div>
+                        <div className="text-sm font-semibold text-green-600">+{badge.pointsReward}pt</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button onClick={() => setShowBadgeAlert(false)}>
+                  확인
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Real or AI?
@@ -133,6 +183,30 @@ export default function VotePage() {
               </div>
             </div>
 
+            {/* 정답률 시각화 */}
+            {content.totalVotes > 0 && (
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-gray-700">현재 투표 결과</span>
+                  <span className="text-sm text-gray-500">총 {content.totalVotes}표</span>
+                </div>
+                <div className="flex h-4 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-red-500 transition-all duration-500"
+                    style={{ width: `${(content.votes.ai / content.totalVotes) * 100}%` }}
+                  ></div>
+                  <div 
+                    className="bg-green-500 transition-all duration-500"
+                    style={{ width: `${(content.votes.real / content.totalVotes) * 100}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-600 mt-1">
+                  <span>🤖 AI: {content.votes.ai}표 ({Math.round((content.votes.ai / content.totalVotes) * 100)}%)</span>
+                  <span>👤 Real: {content.votes.real}표 ({Math.round((content.votes.real / content.totalVotes) * 100)}%)</span>
+                </div>
+              </div>
+            )}
+
             {content.isAnswerRevealed ? (
               <div className="bg-yellow-100 border border-yellow-300 p-4 rounded-lg text-center">
                 <h3 className="text-lg font-semibold text-yellow-800 mb-2">
@@ -142,8 +216,26 @@ export default function VotePage() {
                   정답: <strong>{content.isAI ? 'AI 생성' : '실제 콘텐츠'}</strong>
                 </p>
                 <div className="mt-4 text-sm text-yellow-600">
-                  AI 투표: {content.votes.ai} | 실제 투표: {content.votes.real}
+                  전체 정답률: {calculateAccuracy()}%
                 </div>
+              </div>
+            ) : hasVoted && voteResult ? (
+              <div className="bg-blue-100 border border-blue-300 p-4 rounded-lg text-center">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                  투표 완료!
+                </h3>
+                <p className="text-blue-700 mb-2">
+                  {voteResult.isCorrect ? '🎉 정답입니다!' : '❌ 틀렸습니다.'}
+                </p>
+                <p className="text-sm text-blue-600">
+                  획득 포인트: +{voteResult.pointsEarned}pt
+                </p>
+                <Button 
+                  onClick={() => window.location.href = '/'}
+                  className="mt-3"
+                >
+                  다른 콘텐츠 투표하기
+                </Button>
               </div>
             ) : (
               <div className="space-y-4">
