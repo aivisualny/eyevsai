@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { getContent, getComments, postComment, deleteComment, getMe, likeComment, unlikeComment, getCommentLikes, voteComment } from '../../../lib/api';
+import { getContent, getComments, postComment, deleteComment, getMe, likeComment, unlikeComment, getCommentLikes, voteContent } from '../../../lib/api';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import AIResultPlaceholder from '../../../components/ui/AIResultPlaceholder';
@@ -145,7 +145,10 @@ export default function ContentDetailPage() {
       alert('로그인이 필요합니다.');
       return;
     }
-    await voteComment(commentId, vote);
+    // 댓글 투표 기능이 별도 API가 없으므로, 실제로는 voteContent를 사용하거나, 이 부분을 주석 처리해야 함
+    // await voteComment(commentId, vote);
+    // 임시로 경고만 표시
+    alert('댓글 투표 기능은 아직 구현되어 있지 않습니다.');
     loadComments();
   };
 
