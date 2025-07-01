@@ -188,7 +188,6 @@ export default function RankingPage() {
                       {/* 팔로우/언팔로우 버튼 */}
                       {me && !isMe && (
                         <Button
-                          size="sm"
                           variant={isFollowing ? 'outline' : 'default'}
                           className="ml-2 min-w-[80px]"
                           disabled={followLoading === userId}
