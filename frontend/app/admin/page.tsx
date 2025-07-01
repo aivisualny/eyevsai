@@ -5,8 +5,19 @@ import { getMe } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 
+type AdminUser = {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  points: number;
+  totalVotes: number;
+  correctVotes: number;
+  accuracy: number;
+};
+
 export default function AdminPage() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
