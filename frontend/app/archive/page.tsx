@@ -37,7 +37,7 @@ export default function ArchivePage() {
   // 탭 목록 동적 생성
   const tabList = [
     { key: "all", name: "전체" },
-    ...generators.map(g => ({ key: g, name: g })),
+    ...generators.map((g: any) => ({ key: g, name: g })),
   ];
 
   // 필터링

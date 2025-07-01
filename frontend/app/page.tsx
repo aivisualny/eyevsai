@@ -83,7 +83,7 @@ export default function HomePage() {
     fetchContents();
   }, []);
 
-  function filteredContents(tab, contents) {
+  function filteredContents(tab: any, contents: any[]) {
     if (tab === 'all') return contents;
     if (tab === 'progress') return contents.filter(c => c.status !== 'closed');
     if (tab === 'closed') return contents.filter(c => c.status === 'closed');
@@ -144,7 +144,7 @@ export default function HomePage() {
 
         {/* 통계 영역 */}
         <section className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-10 px-4">
-          {stats.map((s) => (
+          {stats.map((s: any) => (
             <div key={s.label} className="flex flex-col items-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow hover:shadow-lg transition-all">
               <span className="text-3xl mb-2">{s.icon}</span>
               <span className="text-2xl font-bold text-blue-700 mb-1">{s.value}</span>

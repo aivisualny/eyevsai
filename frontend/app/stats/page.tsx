@@ -86,11 +86,11 @@ export default function StatsPage() {
   const renderAccuracyChart = (data: any[]) => {
     if (!data || data.length === 0) return null;
     
-    const maxAccuracy = Math.max(...data.map(d => d.accuracy));
+    const maxAccuracy = Math.max(...data.map((d: any) => d.accuracy));
     
     return (
       <div className="space-y-2">
-        {data.map((day, index) => (
+        {data.map((day: any, index: number) => (
           <div key={index} className="flex items-center gap-3">
             <div className="w-16 text-xs text-gray-500">
               {new Date(day.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}

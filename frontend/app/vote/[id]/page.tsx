@@ -118,7 +118,7 @@ export default function VotePage() {
                 <div className="text-4xl mb-4">🎉</div>
                 <h3 className="text-xl font-bold mb-4">새로운 뱃지를 획득했습니다!</h3>
                 <div className="space-y-3 mb-6">
-                  {newBadges.map((badge, index) => (
+                  {newBadges.map((badge: any, index: number) => (
                     <div key={index} className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
                       <div className="flex items-center gap-3">
                         <div className="text-2xl">{badge.icon}</div>

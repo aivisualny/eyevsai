@@ -261,7 +261,7 @@ export default function MyPage() {
                     아직 맞힌 콘텐츠가 없습니다.
                   </div>
                 ) : (
-                  correctVotes.map(renderVoteItem)
+                  correctVotes.map((vote: any) => renderVoteItem(vote))
                 )}
               </div>
             </div>
@@ -276,7 +276,7 @@ export default function MyPage() {
                     아직 틀린 콘텐츠가 없습니다.
                   </div>
                 ) : (
-                  wrongVotes.map(renderVoteItem)
+                  wrongVotes.map((vote: any) => renderVoteItem(vote))
                 )}
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function MyPage() {
                     <span className="text-sm">투표를 통해 뱃지를 획득해보세요!</span>
                   </div>
                 ) : (
-                  badges.map(renderBadge)
+                  badges.map((badge: any) => renderBadge(badge))
                 )}
               </div>
             </div>
