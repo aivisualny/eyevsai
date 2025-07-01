@@ -181,7 +181,7 @@ export default function MyPage() {
               { id: 'wrong', label: '❌ 틀린 콘텐츠', count: wrongVotes.length },
               { id: 'requested', label: '🔍 감별 요청', count: requestedReviews.length },
               { id: 'badges', label: '🏅 뱃지', count: badges.length }
-            ].map((tabItem) => (
+            ].map((tabItem: any) => (
               <button
                 key={tabItem.id}
                 className={`flex-1 px-4 py-3 font-semibold text-sm transition-colors ${
@@ -232,7 +232,7 @@ export default function MyPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-4">최근 7일 정답률</h3>
                 <div className="grid grid-cols-7 gap-2">
-                  {voteStats.last7Days.map((day, index) => (
+                  {voteStats.last7Days.map((day: any, index: number) => (
                     <div key={index} className="text-center">
                       <div className="text-xs text-gray-500 mb-1">
                         {new Date(day.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
