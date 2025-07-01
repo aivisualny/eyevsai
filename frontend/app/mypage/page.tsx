@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
-import { getMe, getMyVotesFiltered, getMyVoteStats, getMyBadges, getFollowers, getFollowing, getMyRequestedReviews } from "@/lib/api";
+import { getMe, getMyVotesFiltered, getMyVoteStats, getMyBadges, getFollowers, getFollowing, getMyRequestedReviews, withdraw } from "@/lib/api";
 import { User, Vote, VoteStats, UserBadge } from "@/types/content";
 
 export default function MyPage() {
@@ -334,6 +334,27 @@ export default function MyPage() {
               </div>
             </div>
           )}
+        </div>
+        <div className="mt-10 flex justify-end">
+          <Button
+            variant="outline"
+            className="border-red-400 text-red-600 hover:bg-red-50"
+            onClick={async () => {
+              if (window.confirm('정말로 회원탈퇴를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                try {
+                  await withdraw();
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('user');
+                  alert('회원탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
+                  window.location.href = '/';
+                } catch (e: any) {
+                  alert(e?.response?.data?.error || '회원탈퇴에 실패했습니다.');
+                }
+              }
+            }}
+          >
+            회원탈퇴
+          </Button>
         </div>
       </div>
     </main>

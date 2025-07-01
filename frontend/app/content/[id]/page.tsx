@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { getContent, getComments, postComment, deleteComment, getMe, likeComment, unlikeComment, getCommentLikes, voteComment } from '../../../lib/api';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
+import AIResultPlaceholder from '../../../components/ui/AIResultPlaceholder';
 
 export default function ContentDetailPage() {
   const params = useParams();
@@ -201,6 +202,7 @@ export default function ContentDetailPage() {
               />
             )}
           </div>
+          <AIResultPlaceholder />
           <div className="p-6">
             <h2 className="text-2xl font-bold mb-2">{content.title}</h2>
             <p className="text-gray-600 mb-4">{content.description}</p>

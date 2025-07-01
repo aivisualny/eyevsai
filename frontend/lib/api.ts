@@ -203,4 +203,10 @@ export async function getMyVotesFiltered(params?: {
     params 
   });
   return res.data;
+}
+
+// 회원탈퇴
+export async function withdraw() {
+  const res = await axios.delete(`${API_BASE}/auth/delete`, { headers: getAuthHeaders() });
+  return res.data;
 } 

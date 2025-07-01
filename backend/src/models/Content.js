@@ -98,6 +98,19 @@ const contentSchema = new mongoose.Schema({
   predictedAccuracy: {
     type: Number,
     default: null
+  },
+  aiDetectionResult: {
+    type: String,
+    enum: ['REAL', 'FAKE', null],
+    default: null
+  },
+  aiConfidence: {
+    type: Number,
+    default: null
+  },
+  detectionModel: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

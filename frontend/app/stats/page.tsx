@@ -10,6 +10,17 @@ export default function StatsPage() {
   const [personalStats, setPersonalStats] = useState<VoteStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [aiStats, setAIStats] = useState<any[]>([{
+    model: 'microsoft/beit-base',
+    app: 'Midjourney',
+    accuracy: 83.2,
+    sample: 120
+  }, {
+    model: 'yuvalkirstain/PickScore',
+    app: '사진',
+    accuracy: 76.5,
+    sample: 80
+  }]);
 
   useEffect(() => {
     async function fetchStats() {
@@ -205,6 +216,34 @@ export default function StatsPage() {
                   아직 충분한 투표 데이터가 없습니다.
                 </div>
               )}
+            </div>
+
+            {/* AI 탐지기 통계 */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-xl font-bold mb-4">🤖 AI 탐지기 정확도</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 font-semibold">모델</th>
+                      <th className="text-center py-2 font-semibold">적용 콘텐츠</th>
+                      <th className="text-center py-2 font-semibold">탐지 성공률</th>
+                      <th className="text-center py-2 font-semibold">샘플 수</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {aiStats.map(ai => (
+                      <tr key={ai.model} className="border-b">
+                        <td className="py-2 font-medium">{ai.model}</td>
+                        <td className="py-2 text-center">{ai.app}</td>
+                        <td className="py-2 text-center font-bold text-blue-600">{ai.accuracy}%</td>
+                        <td className="py-2 text-center text-gray-600">{ai.sample}개</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-2 text-xs text-gray-500">※ 실제 AI 탐지기 연동 및 통계는 추후 실데이터로 대체됩니다.</div>
             </div>
           </div>
         )}

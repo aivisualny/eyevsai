@@ -422,4 +422,27 @@ router.post('/analyze', auth, async (req, res) => {
   }
 });
 
+// [AI 탐지기] 목업 분석 API
+// POST /api/analyze-content
+router.post('/analyze-content', async (req, res) => {
+  const { contentId } = req.body;
+  if (!contentId) {
+    return res.status(400).json({ error: 'contentId is required' });
+  }
+  try {
+    const content = await Content.findById(contentId);
+    if (!content) {
+      return res.status(404).json({ error: 'Content not found' });
+    }
+    // 실제 분석 없이, 현재 DB에 저장된 값만 반환
+    return res.json({
+      aiDetectionResult: content.aiDetectionResult,
+      aiConfidence: content.aiConfidence,
+      detectionModel: content.detectionModel
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router; 

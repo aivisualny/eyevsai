@@ -5,6 +5,7 @@ const Content = require('../models/Content');
 const User = require('../models/User');
 const BadgeSystem = require('../utils/badgeSystem');
 const { auth } = require('../middleware/auth');
+const WrongVote = require('../models/WrongVote');
 
 const router = express.Router();
 
@@ -48,6 +49,15 @@ router.post('/', auth, async (req, res) => {
       pointsEarned
     });
     await newVote.save();
+
+    // 오답일 경우 WrongVote 로그 저장 (백그라운드)
+    if (!isCorrect) {
+      WrongVote.create({
+        contentId,
+        userId: req.user._id,
+        wasReal: content.type === 'real',
+      }).catch(() => {});
+    }
 
     // 콘텐츠 투표수 증가
     content.votes[vote] += 1;

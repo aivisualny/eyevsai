@@ -135,8 +135,8 @@ export default function HomePage() {
               <Button onClick={() => window.location.href = '/vote'} className="w-full md:w-auto text-lg md:text-xl py-4 px-8 font-bold shadow-lg bg-blue-600 text-white border-2 border-blue-600 hover:bg-white hover:text-blue-700 transition-all rounded-xl">
                 투표 시작하기
               </Button>
-              <Button onClick={() => window.location.href = '/upload'} variant="outline" className="w-full md:w-auto text-lg md:text-xl py-4 px-8 font-bold shadow-lg border-2 border-white text-white hover:bg-white hover:text-blue-700 transition-all rounded-xl">
-                콘텐츠 업로드
+              <Button onClick={() => window.location.href = '/guide'} variant="outline" className="w-full md:w-auto text-lg md:text-xl py-4 px-8 font-bold shadow-lg border-2 border-white text-white hover:bg-white hover:text-blue-700 transition-all rounded-xl">
+                AI 탐지란?
               </Button>
             </div>
           </div>
@@ -145,7 +145,8 @@ export default function HomePage() {
         {/* 통계 영역 */}
         <section className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-10 px-4">
           {stats.map((s) => (
-            <div key={s.label} className="flex flex-col items-center bg-blue-50 rounded-lg p-4">
+            <div key={s.label} className="flex flex-col items-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow hover:shadow-lg transition-all">
+              <span className="text-3xl mb-2">{s.icon}</span>
               <span className="text-2xl font-bold text-blue-700 mb-1">{s.value}</span>
               <span className="text-gray-600 text-sm">{s.label}</span>
             </div>
@@ -178,7 +179,7 @@ export default function HomePage() {
                       <div className="text-xs text-gray-500">{c.totalVotes || 0}명 참여</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-bold text-blue-600">{c.totalVotes ? Math.round((c.votes?.real || 0) / c.totalVotes * 100) : 0}%</div>
+                      <div className="text-sm font-bold text-green-600">{c.totalVotes ? Math.round((c.votes?.real || 0) / c.totalVotes * 100) : 0}%</div>
                       <div className="text-xs text-gray-500">Real 비율</div>
                     </div>
                   </div>
@@ -221,13 +222,13 @@ export default function HomePage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredContents(tab, contents).map((c: any) => (
-                      <div key={c._id} className="rounded-xl border shadow-lg p-4 bg-gray-50 hover:shadow-2xl transition-all cursor-pointer" onClick={() => window.location.href = `/vote/${c._id}`}>
+                      <div key={c._id} className="rounded-xl border shadow-lg p-4 bg-white hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer">
                         <div className="relative mb-3 group">
                           <img src={c.mediaUrl.startsWith('http') ? c.mediaUrl : `http://localhost:5000${c.mediaUrl}`} alt={c.title} className="rounded-lg w-full h-48 object-cover group-hover:scale-105 group-hover:shadow-xl transition-transform duration-200" />
                           {c.status === 'closed' && <span className="absolute top-2 right-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">마감됨</span>}
                           {c.isAnswerRevealed && <span className="absolute top-2 left-2 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded">정답 공개됨</span>}
                           {c.isRecycled && (
-                            <span className="absolute top-2 left-2 bg-pink-100 text-pink-600 text-xs px-2 py-1 rounded font-semibold shadow">🔁 재투표</span>
+                            <span className="absolute top-2 left-2 bg-pink-100 text-pink-600 text-xs px-2 py-1 rounded font-semibold shadow">♻️ 재투표</span>
                           )}
                           {c.isRequestedReview && (
                             <span className="absolute top-2 right-2 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded font-semibold shadow">🔍 감별 요청</span>

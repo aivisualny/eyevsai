@@ -35,21 +35,29 @@ const Header = ({ user, onLogout, onWithdraw }: {
                 className="px-4 py-2 rounded-md border border-gray-200 bg-gray-50 hover:bg-gray-100 font-semibold"
                 onClick={() => setDropdown((v) => !v)}
               >
-                {user.username} ▾
+                {user.username} ▼
               </button>
               {dropdown && (
                 <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-50">
+                  <a
+                    href="/mypage"
+                    className="w-full block text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                    onClick={() => setDropdown(false)}
+                  >
+                    마이페이지
+                  </a>
+                  <a
+                    href="/stats"
+                    className="w-full block text-left px-4 py-2 hover:bg-gray-100 text-gray-700 border-t"
+                    onClick={() => setDropdown(false)}
+                  >
+                    나의 통계
+                  </a>
                   <button
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700 border-t"
                     onClick={() => { setDropdown(false); onLogout && onLogout(); }}
                   >
                     로그아웃
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 border-t"
-                    onClick={() => { setDropdown(false); onWithdraw && onWithdraw(); }}
-                  >
-                    회원탈퇴
                   </button>
                 </div>
               )}
@@ -60,7 +68,6 @@ const Header = ({ user, onLogout, onWithdraw }: {
               <Link href="/register" className="px-4 py-2 rounded-md border border-gray-200 bg-gray-50 hover:bg-gray-100 font-semibold">회원가입</Link>
             </>
           )}
-          <Link href="/upload" className="ml-2 px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700">콘텐츠 업로드</Link>
         </div>
       </div>
     </header>
