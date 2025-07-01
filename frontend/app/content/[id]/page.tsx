@@ -6,6 +6,7 @@ import { getContent, getComments, postComment, deleteComment, getMe, likeComment
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import AIResultPlaceholder from '../../../components/ui/AIResultPlaceholder';
+import React from 'react';
 
 export default function ContentDetailPage() {
   const params = useParams();
@@ -43,7 +44,7 @@ export default function ContentDetailPage() {
   };
 
   // 댓글 좋아요 정보 불러오기
-  const loadCommentLikes = async (commentsList = comments) => {
+  const loadCommentLikes = async (commentsList: any[] = comments) => {
     const newLikesCount: { [key: string]: number } = {};
     const newLiked: { [key: string]: boolean } = {};
     for (const c of commentsList) {
@@ -58,7 +59,7 @@ export default function ContentDetailPage() {
   };
 
   // 댓글 불러올 때마다 좋아요 정보도 갱신
-  const loadComments = async () => {
+  const loadComments = async (): Promise<void> => {
     try {
       const data = await getComments(contentId);
       setComments(data.comments);
@@ -76,7 +77,7 @@ export default function ContentDetailPage() {
     } catch (error) {}
   };
 
-  const handleCommentSubmit = async (e) => {
+  const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) {
       alert('로그인이 필요합니다.');
@@ -95,7 +96,7 @@ export default function ContentDetailPage() {
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
+  const handleDeleteComment = async (commentId: string) => {
     if (!confirm('댓글을 삭제하시겠습니까?')) return;
     try {
       await deleteComment(commentId);
@@ -120,7 +121,7 @@ export default function ContentDetailPage() {
   };
 
   // 댓글 vote 집계
-  const getVoteCounts = (comments) => {
+  const getVoteCounts = (comments: any[]): { agree: { [key: string]: number }, disagree: { [key: string]: number } } => {
     const agree: { [key: string]: number } = {};
     const disagree: { [key: string]: number } = {};
     comments.forEach(c => {
@@ -132,7 +133,7 @@ export default function ContentDetailPage() {
   const voteCounts = getVoteCounts(comments);
 
   // 댓글 정렬
-  const sortedComments = [...comments as any[]].sort((a, b) => {
+  const sortedComments = [...comments as any[]].sort((a: any, b: any) => {
     if (sortType === 'latest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     if (sortType === 'likes') return (likesCount[b._id] || 0) - (likesCount[a._id] || 0);
     if (sortType === 'disagree') return (voteCounts.disagree[b._id] || 0) - (voteCounts.disagree[a._id] || 0);
@@ -272,7 +273,7 @@ export default function ContentDetailPage() {
             {sortedComments.length === 0 ? (
               <div className="text-gray-400 text-center">아직 댓글이 없습니다.</div>
             ) : (
-              (sortedComments as any[]).map((c) => (
+              (sortedComments as any[]).map((c: any) => (
                 <div key={c._id} className="flex items-start space-x-3 group">
                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
                     {c.user?.avatar ? (
@@ -326,7 +327,7 @@ export default function ContentDetailPage() {
             <input
               type="text"
               value={commentText}
-              onChange={e => setCommentText(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCommentText(e.target.value)}
               placeholder="댓글을 입력하세요 (최대 300자)"
               maxLength={300}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
