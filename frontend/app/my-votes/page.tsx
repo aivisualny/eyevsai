@@ -26,7 +26,7 @@ export default function MyVotesPage() {
       const userData = await getMe();
       setUser(userData.user);
       loadVotes();
-    } catch (error) {
+    } catch (error: any) {
       alert('로그인이 필요합니다.');
       window.location.href = '/login';
     } finally {
@@ -38,7 +38,7 @@ export default function MyVotesPage() {
     try {
       const data = await getMyVotes();
       setVotes(data.votes);
-    } catch (error) {
+    } catch (error: any) {
       setError('투표 내역을 불러오는데 실패했습니다.');
     }
   };

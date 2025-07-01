@@ -46,7 +46,7 @@ export default function UploadPage() {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: any) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
@@ -58,7 +58,7 @@ export default function UploadPage() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setUploading(true);
     setError('');
@@ -90,7 +90,7 @@ export default function UploadPage() {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -98,7 +98,7 @@ export default function UploadPage() {
   };
 
   // AI 난이도 분석 호출
-  const analyzeAI = async (file = selectedFile, desc = formData.description) => {
+  const analyzeAI = async (file: any = selectedFile, desc: any = formData.description) => {
     if (!file && !desc) return;
     setAnalyzing(true);
     try {

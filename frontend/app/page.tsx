@@ -37,7 +37,7 @@ export default function HomePage() {
     try {
       const data = await getContents({ page, limit: 10, category, difficulty });
       setContents(data.contents);
-    } catch (error) {
+    } catch (error: any) {
       console.error('콘텐츠 로드 실패:', error);
     } finally {
       setLoading(false);
@@ -55,7 +55,7 @@ export default function HomePage() {
         setUser(userData.user);
         setUserBadges(badgesData.badges || []);
       }
-    } catch (error) {
+    } catch (error: any) {
       localStorage.removeItem('token');
     }
   };
@@ -64,7 +64,7 @@ export default function HomePage() {
     try {
       const data = await getRanking();
       setRanking(data.ranking || []);
-    } catch (e) {}
+    } catch (e: any) {}
   };
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function HomePage() {
       try {
         const data = await getContents();
         setContents(data.contents || []);
-      } catch (e) {
+      } catch (e: any) {
         setError('콘텐츠를 불러오지 못했습니다.');
       } finally {
         setLoading(false);

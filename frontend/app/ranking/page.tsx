@@ -54,7 +54,7 @@ export default function RankingPage() {
     }
   };
 
-  const sortedRanking = [...ranking].sort((a, b) => {
+  const sortedRanking = [...ranking].sort((a: any, b: any) => {
     switch (sortType) {
       case 'accuracy':
         return (b.accuracy || 0) - (a.accuracy || 0);

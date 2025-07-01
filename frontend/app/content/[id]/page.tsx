@@ -64,7 +64,7 @@ export default function ContentDetailPage() {
       const data = await getComments(contentId);
       setComments(data.comments);
       setTimeout(() => loadCommentLikes(data.comments), 0);
-    } catch (error) {}
+    } catch (error: any) {}
   };
 
   const checkAuth = async () => {
@@ -77,7 +77,7 @@ export default function ContentDetailPage() {
     } catch (error) {}
   };
 
-  const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCommentSubmit = async (e: any) => {
     e.preventDefault();
     if (!user) {
       alert('로그인이 필요합니다.');

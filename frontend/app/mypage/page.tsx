@@ -50,7 +50,7 @@ export default function MyPage() {
         ]);
         setFollowers(followersData.followers || []);
         setFollowing(followingData.following || []);
-      } catch (e) {
+      } catch (e: any) {
         setError("내 정보를 불러오지 못했습니다. 로그인 상태를 확인하세요.");
       } finally {
         setLoading(false);
