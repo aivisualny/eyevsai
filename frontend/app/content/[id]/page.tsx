@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Comment } from '@/types/content';
 import { useParams } from 'next/navigation';
 import { getContent, getComments, postComment, deleteComment, getMe, likeComment, unlikeComment, getCommentLikes, voteContent } from '../../../lib/api';
 import { Button } from '../../../components/ui/Button';
@@ -12,10 +11,10 @@ export default function ContentDetailPage() {
   const params = useParams();
   const contentId = params.id as string;
 
-  const [content, setContent] = useState(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [commentText, setCommentText] = useState('');
-  const [user, setUser] = useState(null);
+  const [content, setContent] = useState<any>(null);
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentText, setCommentText] = useState<string>('');
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
   const [error, setError] = useState('');
@@ -133,7 +132,7 @@ export default function ContentDetailPage() {
   const voteCounts = getVoteCounts(comments);
 
   // 댓글 정렬
-  const sortedComments = [...comments].sort((a, b) => {
+  const sortedComments = [...comments as any[]].sort((a, b) => {
     if (sortType === 'latest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     if (sortType === 'likes') return (likesCount[b._id] || 0) - (likesCount[a._id] || 0);
     if (sortType === 'disagree') return (voteCounts.disagree[b._id] || 0) - (voteCounts.disagree[a._id] || 0);
@@ -273,7 +272,7 @@ export default function ContentDetailPage() {
             {sortedComments.length === 0 ? (
               <div className="text-gray-400 text-center">아직 댓글이 없습니다.</div>
             ) : (
-              sortedComments.map((c) => (
+              (sortedComments as any[]).map((c) => (
                 <div key={c._id} className="flex items-start space-x-3 group">
                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
                     {c.user?.avatar ? (
