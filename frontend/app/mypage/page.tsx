@@ -5,18 +5,18 @@ import { getMe, getMyVotesFiltered, getMyVoteStats, getMyBadges, getFollowers, g
 import { User, Vote, VoteStats, UserBadge } from "@/types/content";
 
 export default function MyPage() {
-  const [tab, setTab] = useState("overview");
-  const [user, setUser] = useState<User | null>(null);
-  const [voteStats, setVoteStats] = useState<VoteStats | null>(null);
-  const [correctVotes, setCorrectVotes] = useState<Vote[]>([]);
-  const [wrongVotes, setWrongVotes] = useState<Vote[]>([]);
-  const [badges, setBadges] = useState<UserBadge[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [followers, setFollowers] = useState([]);
-  const [following, setFollowing] = useState([]);
+  const [tab, setTab] = useState<string>("overview");
+  const [user, setUser] = useState<any>(null);
+  const [voteStats, setVoteStats] = useState<any>(null);
+  const [correctVotes, setCorrectVotes] = useState<any[]>([]);
+  const [wrongVotes, setWrongVotes] = useState<any[]>([]);
+  const [badges, setBadges] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [followers, setFollowers] = useState<any[]>([]);
+  const [following, setFollowing] = useState<any[]>([]);
   const [showFollowList, setShowFollowList] = useState<'followers' | 'following' | null>(null);
-  const [requestedReviews, setRequestedReviews] = useState([]);
+  const [requestedReviews, setRequestedReviews] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -74,7 +74,7 @@ export default function MyPage() {
     );
   }
 
-  const renderBadge = (badge: UserBadge) => (
+  const renderBadge = (badge: any) => (
     <div key={badge.badge.id} className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
       <div className="flex items-center gap-3">
         <div className="text-3xl">{badge.badge.icon}</div>
@@ -92,7 +92,7 @@ export default function MyPage() {
     </div>
   );
 
-  const renderVoteItem = (vote: Vote) => (
+  const renderVoteItem = (vote: any) => (
     <div key={vote.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50">
       <div className={`px-2 py-1 rounded text-xs font-semibold text-white ${
         vote.isCorrect ? 'bg-green-500' : 'bg-red-500'

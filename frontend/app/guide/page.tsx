@@ -39,7 +39,7 @@ export default function GuidePage() {
         <section>
           <h2 className="text-lg font-semibold mb-4">자주 묻는 질문</h2>
           <ul className="space-y-6">
-            {faqs.map((f, i) => (
+            {faqs.map((f: any, i: number) => (
               <li key={i}>
                 <div className="font-bold text-blue-700 mb-1">Q. {f.q}</div>
                 <div className="text-gray-700 pl-4">{f.a}</div>

@@ -7,10 +7,10 @@ import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 
 export default function UploadPage() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [formData, setFormData] = useState<any>({
     title: '',
     description: '',
     category: 'other',
@@ -19,10 +19,10 @@ export default function UploadPage() {
     isAI: 'false',
     isRequestedReview: false
   });
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [error, setError] = useState('');
-  const [aiAnalysis, setAiAnalysis] = useState<{ predictedDifficulty?: string; predictedAccuracy?: number } | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [error, setError] = useState<string>('');
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
+  const [analyzing, setAnalyzing] = useState<boolean>(false);
 
   useEffect(() => {
     checkAuth();

@@ -18,13 +18,13 @@ export default function VotePage() {
   const contentId = params.id as string;
   
   const [content, setContent] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [voting, setVoting] = useState(false);
-  const [error, setError] = useState('');
-  const [hasVoted, setHasVoted] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [voting, setVoting] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [hasVoted, setHasVoted] = useState<boolean>(false);
   const [voteResult, setVoteResult] = useState<any>(null);
-  const [showBadgeAlert, setShowBadgeAlert] = useState(false);
-  const [newBadges, setNewBadges] = useState<Badge[]>([]);
+  const [showBadgeAlert, setShowBadgeAlert] = useState<boolean>(false);
+  const [newBadges, setNewBadges] = useState<any[]>([]);
 
   useEffect(() => {
     loadContent();

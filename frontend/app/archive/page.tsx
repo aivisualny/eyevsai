@@ -8,11 +8,11 @@ const apps = [
 ];
 
 export default function ArchivePage() {
-  const [tab, setTab] = useState("all");
+  const [tab, setTab] = useState<string>("all");
   const [contents, setContents] = useState<any[]>([]);
   const [generators, setGenerators] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     async function fetchContents() {
@@ -68,7 +68,7 @@ export default function ArchivePage() {
           <div className="text-center text-gray-400 py-12">표시할 콘텐츠가 없습니다.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filtered.map((c) => (
+            {filtered.map((c: any) => (
               <div key={c._id} className="border rounded-lg p-4 bg-gray-50">
                 <img src={c.mediaUrl?.startsWith('http') ? c.mediaUrl : `http://localhost:5000${c.mediaUrl}`} alt={c.title} className="rounded w-full h-40 object-cover mb-3" />
                 <div className="font-semibold mb-1">{c.title}</div>

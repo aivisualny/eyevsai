@@ -16,16 +16,16 @@ const stats = [
 ];
 
 export default function HomePage() {
-  const [contents, setContents] = useState([]);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [category, setCategory] = useState('');
-  const [difficulty, setDifficulty] = useState('');
-  const [ranking, setRanking] = useState([]);
-  const [userBadges, setUserBadges] = useState([]);
-  const [error, setError] = useState('');
-  const [tab, setTab] = useState('all');
+  const [contents, setContents] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [page, setPage] = useState<number>(1);
+  const [category, setCategory] = useState<string>('');
+  const [difficulty, setDifficulty] = useState<string>('');
+  const [ranking, setRanking] = useState<any[]>([]);
+  const [userBadges, setUserBadges] = useState<any[]>([]);
+  const [error, setError] = useState<string>('');
+  const [tab, setTab] = useState<string>('all');
 
   useEffect(() => {
     loadContents();

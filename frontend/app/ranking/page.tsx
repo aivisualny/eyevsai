@@ -7,8 +7,8 @@ type SortType = 'accuracy' | 'points' | 'votes';
 
 export default function RankingPage() {
   const [ranking, setRanking] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
   const [sortType, setSortType] = useState<SortType>('accuracy');
   const [me, setMe] = useState<any>(null);
   const [followings, setFollowings] = useState<string[]>([]);
@@ -126,7 +126,7 @@ export default function RankingPage() {
           <div className="space-y-6">
             {/* TOP 3 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {sortedRanking.slice(0, 3).map((user, index) => (
+              {sortedRanking.slice(0, 3).map((user: any, index: number) => (
                 <div key={user._id} className={`${getRankColor(index)} border-2 rounded-xl p-6 text-center`}>
                   <div className="text-4xl mb-2">{getRankIcon(index)}</div>
                   <div className="text-xl font-bold mb-2">{user.username}</div>
@@ -152,7 +152,7 @@ export default function RankingPage() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold mb-4">전체 랭킹</h2>
               <div className="space-y-3">
-                {sortedRanking.map((user, index) => {
+                {sortedRanking.map((user: any, index: number) => {
                   const userId = user.id || user._id;
                   const isMe = me && (me.id === userId || me._id === userId);
                   const isFollowing = followings.includes(userId);

@@ -6,10 +6,10 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 
 export default function MyVotesPage() {
-  const [user, setUser] = useState(null);
-  const [votes, setVotes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [user, setUser] = useState<any>(null);
+  const [votes, setVotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     checkAuth();
@@ -97,7 +97,7 @@ export default function MyVotesPage() {
               </div>
             </Card>
           ) : (
-            votes.map((vote) => (
+            votes.map((vote: any) => (
               <Card key={vote._id} className="p-6">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0 w-24 h-24 bg-gray-200 rounded-lg overflow-hidden">

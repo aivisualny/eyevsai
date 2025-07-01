@@ -16,9 +16,9 @@ export default function ContentDetailPage() {
   const [comments, setComments] = useState<any[]>([]);
   const [commentText, setCommentText] = useState<string>('');
   const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [commentLoading, setCommentLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [commentLoading, setCommentLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   // 댓글 좋아요 상태 관리
   const [likedComments, setLikedComments] = useState<{ [key: string]: boolean }>({});

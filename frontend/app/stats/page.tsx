@@ -7,9 +7,9 @@ export default function StatsPage() {
   const [globalStats, setGlobalStats] = useState<any>(null);
   const [appStats, setAppStats] = useState<any[]>([]);
   const [difficultContents, setDifficultContents] = useState<any[]>([]);
-  const [personalStats, setPersonalStats] = useState<VoteStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [personalStats, setPersonalStats] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
   const [aiStats, setAIStats] = useState<any[]>([{
     model: 'microsoft/beit-base',
     app: 'Midjourney',
@@ -123,7 +123,7 @@ export default function StatsPage() {
           <div className="space-y-8">
             {/* 전체 통계 카드 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Object.entries(globalStats).map(([label, value]) => (
+              {Object.entries(globalStats).map(([label, value]: any) => (
                 <div key={label} className="bg-white rounded-xl shadow-sm p-6">
                   <div className="text-3xl font-bold text-blue-600 mb-2">{value}</div>
                   <div className="text-gray-600 text-sm">{label}</div>
@@ -165,7 +165,7 @@ export default function StatsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {appStats.map(app => (
+                      {appStats.map((app: any) => (
                         <tr key={app.app} className="border-b">
                           <td className="py-2 font-medium">{app.app}</td>
                           <td className="py-2 text-center">
@@ -189,7 +189,7 @@ export default function StatsPage() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold mb-4">🔥 가장 어려운 콘텐츠 TOP 10</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {difficultContents.map((content, index) => (
+                {difficultContents.map((content: any, index: number) => (
                   <div key={content.id} className="border rounded-lg p-4 hover:bg-gray-50">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs font-bold">
