@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { Comment } from '@/types/content';
 import { useParams } from 'next/navigation';
 import { getContent, getComments, postComment, deleteComment, getMe, likeComment, unlikeComment, getCommentLikes, voteContent } from '../../../lib/api';
 import { Button } from '../../../components/ui/Button';
@@ -12,7 +13,7 @@ export default function ContentDetailPage() {
   const contentId = params.id as string;
 
   const [content, setContent] = useState(null);
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState('');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
