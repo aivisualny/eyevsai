@@ -59,6 +59,15 @@ export async function getMyUploads(params?: any) {
   return res.data;
 }
 
+// 내가 요청한 감별 콘텐츠
+export async function getMyRequestedReviews(params?: any) {
+  const res = await axios.get(`${API_BASE}/content/user/requested-reviews`, {
+    headers: getAuthHeaders(),
+    params,
+  });
+  return res.data;
+}
+
 // 투표하기
 export async function voteContent(data: { contentId: string; vote: 'ai' | 'real' }) {
   const res = await axios.post(`${API_BASE}/votes`, data, { headers: getAuthHeaders() });

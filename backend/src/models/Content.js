@@ -78,6 +78,10 @@ const contentSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isRequestedReview: {
+    type: Boolean,
+    default: false
+  },
   recycleAt: {
     type: Date,
     default: null

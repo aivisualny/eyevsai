@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { getContent, getComments, postComment, deleteComment, getMe, likeComment, unlikeComment, getCommentLikes } from '../../../lib/api';
+import { getContent, getComments, postComment, deleteComment, getMe, likeComment, unlikeComment, getCommentLikes, voteComment } from '../../../lib/api';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 
@@ -21,6 +21,8 @@ export default function ContentDetailPage() {
   // 댓글 좋아요 상태 관리
   const [likedComments, setLikedComments] = useState<{ [key: string]: boolean }>({});
   const [likesCount, setLikesCount] = useState<{ [key: string]: number }>({});
+
+  const [sortType, setSortType] = useState<'latest' | 'likes' | 'disagree'>('latest');
 
   useEffect(() => {
     loadContent();
@@ -116,6 +118,36 @@ export default function ContentDetailPage() {
     loadCommentLikes();
   };
 
+  // 댓글 vote 집계
+  const getVoteCounts = (comments) => {
+    const agree: { [key: string]: number } = {};
+    const disagree: { [key: string]: number } = {};
+    comments.forEach(c => {
+      if (c.vote === 'agree') agree[c._id] = (agree[c._id] || 0) + 1;
+      if (c.vote === 'disagree') disagree[c._id] = (disagree[c._id] || 0) + 1;
+    });
+    return { agree, disagree };
+  };
+  const voteCounts = getVoteCounts(comments);
+
+  // 댓글 정렬
+  const sortedComments = [...comments].sort((a, b) => {
+    if (sortType === 'latest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    if (sortType === 'likes') return (likesCount[b._id] || 0) - (likesCount[a._id] || 0);
+    if (sortType === 'disagree') return (voteCounts.disagree[b._id] || 0) - (voteCounts.disagree[a._id] || 0);
+    return 0;
+  });
+
+  // 댓글 반박(투표) 핸들러
+  const handleVote = async (commentId: string, vote: 'agree' | 'disagree') => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    await voteComment(commentId, vote);
+    loadComments();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -172,6 +204,20 @@ export default function ContentDetailPage() {
           <div className="p-6">
             <h2 className="text-2xl font-bold mb-2">{content.title}</h2>
             <p className="text-gray-600 mb-4">{content.description}</p>
+
+            {/* AI 예측 결과 표시 */}
+            {(content.predictedDifficulty || content.predictedAccuracy) && (
+              <div className="flex items-center gap-4 mb-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                <span className="text-blue-700 font-semibold">AI 예측</span>
+                {content.predictedDifficulty && (
+                  <span className="text-sm">예상 난이도: <b>{content.predictedDifficulty === 'easy' ? '쉬움' : content.predictedDifficulty === 'normal' ? '보통' : '어려움'}</b></span>
+                )}
+                {content.predictedAccuracy !== null && (
+                  <span className="text-sm">예상 정답률: <b>{content.predictedAccuracy}%</b></span>
+                )}
+              </div>
+            )}
+
             <div className="flex space-x-4 mb-2">
               <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
                 {content.category}
@@ -194,17 +240,34 @@ export default function ContentDetailPage() {
                 </span>
               </div>
             )}
+            {content.isRequestedReview && (
+              <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-700 text-lg">🔍</span>
+                  <div>
+                    <div className="text-yellow-800 font-semibold text-sm">감별 요청된 콘텐츠입니다</div>
+                    <div className="text-yellow-600 text-xs">당신의 판단을 들려주세요!</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 
         {/* 댓글창 */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">댓글</h3>
+          {/* 정렬 옵션 */}
+          <div className="flex gap-2 mb-4">
+            <button className={`px-3 py-1 rounded text-sm font-semibold border ${sortType === 'latest' ? 'bg-blue-100 border-blue-400 text-blue-700' : 'bg-white border-gray-200 text-gray-500'}`} onClick={() => setSortType('latest')}>최신순</button>
+            <button className={`px-3 py-1 rounded text-sm font-semibold border ${sortType === 'likes' ? 'bg-pink-100 border-pink-400 text-pink-700' : 'bg-white border-gray-200 text-gray-500'}`} onClick={() => setSortType('likes')}>공감순</button>
+            <button className={`px-3 py-1 rounded text-sm font-semibold border ${sortType === 'disagree' ? 'bg-yellow-100 border-yellow-400 text-yellow-700' : 'bg-white border-gray-200 text-gray-500'}`} onClick={() => setSortType('disagree')}>반박순</button>
+          </div>
           <div className="space-y-4 max-h-80 overflow-y-auto mb-4">
-            {comments.length === 0 ? (
+            {sortedComments.length === 0 ? (
               <div className="text-gray-400 text-center">아직 댓글이 없습니다.</div>
             ) : (
-              comments.map((c) => (
+              sortedComments.map((c) => (
                 <div key={c._id} className="flex items-start space-x-3 group">
                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
                     {c.user?.avatar ? (
@@ -219,6 +282,10 @@ export default function ContentDetailPage() {
                       <span className="text-xs text-gray-400">{new Date(c.createdAt).toLocaleString()}</span>
                     </div>
                     <div className="text-gray-700 text-sm mt-1">{c.text}</div>
+                    <div className="flex gap-2 mt-1">
+                      <span className="text-xs text-pink-600">공감 {voteCounts.agree[c._id] || 0}</span>
+                      <span className="text-xs text-yellow-600">반박 {voteCounts.disagree[c._id] || 0}</span>
+                    </div>
                   </div>
                   <div className="flex flex-col items-center ml-2">
                     <button
@@ -228,6 +295,14 @@ export default function ContentDetailPage() {
                       title={user ? (likedComments[c._id] ? '좋아요 취소' : '좋아요') : '로그인 필요'}
                     >
                       ♥ {likesCount[c._id] || 0}
+                    </button>
+                    <button
+                      className="text-xs px-2 py-1 rounded-full border bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100 mt-1"
+                      onClick={() => handleVote(c._id, 'disagree')}
+                      disabled={!user}
+                      title="반박하기"
+                    >
+                      반박
                     </button>
                     {user && c.user && user.id === c.user._id && (
                       <button

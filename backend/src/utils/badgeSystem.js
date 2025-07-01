@@ -149,6 +149,22 @@ class BadgeSystem {
       }
     }
   }
+  
+  // 정답률 낮은 콘텐츠 자동 리사이클
+  static async recycleLowAccuracyContents(threshold = 60) {
+    const Content = require('../models/Content');
+    // 마감된 콘텐츠 중 정답률 60% 이하인 것만
+    const candidates = await Content.find({ status: 'closed', isRecycled: false });
+    for (const content of candidates) {
+      const realPercent = content.getRealPercentage();
+      if (realPercent <= threshold) {
+        content.isRecycled = true;
+        content.recycleCount = (content.recycleCount || 0) + 1;
+        content.recycleAt = new Date();
+        await content.save();
+      }
+    }
+  }
 }
 
 module.exports = BadgeSystem; 

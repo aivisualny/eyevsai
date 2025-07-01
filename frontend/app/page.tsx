@@ -25,6 +25,7 @@ export default function HomePage() {
   const [ranking, setRanking] = useState([]);
   const [userBadges, setUserBadges] = useState([]);
   const [error, setError] = useState('');
+  const [tab, setTab] = useState('all');
 
   useEffect(() => {
     loadContents();
@@ -82,6 +83,14 @@ export default function HomePage() {
     fetchContents();
   }, []);
 
+  function filteredContents(tab, contents) {
+    if (tab === 'all') return contents;
+    if (tab === 'progress') return contents.filter(c => c.status !== 'closed');
+    if (tab === 'closed') return contents.filter(c => c.status === 'closed');
+    if (tab === 'requested') return contents.filter(c => c.isRequestedReview === true);
+    return contents;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -123,7 +132,7 @@ export default function HomePage() {
             )}
             
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center w-full max-w-md mx-auto">
-              <Button onClick={() => window.location.href = '/vote'} className="w-full md:w-auto text-lg md:text-xl py-4 px-8 font-bold shadow-lg bg-white text-blue-700 border-2 border-blue-600 hover:bg-blue-600 hover:text-white transition-all rounded-xl">
+              <Button onClick={() => window.location.href = '/vote'} className="w-full md:w-auto text-lg md:text-xl py-4 px-8 font-bold shadow-lg bg-blue-600 text-white border-2 border-blue-600 hover:bg-white hover:text-blue-700 transition-all rounded-xl">
                 투표 시작하기
               </Button>
               <Button onClick={() => window.location.href = '/upload'} variant="outline" className="w-full md:w-auto text-lg md:text-xl py-4 px-8 font-bold shadow-lg border-2 border-white text-white hover:bg-white hover:text-blue-700 transition-all rounded-xl">
@@ -160,6 +169,9 @@ export default function HomePage() {
                       {c.isRecycled && (
                         <span className="absolute top-1 left-1 bg-pink-100 text-pink-600 text-xs px-2 py-0.5 rounded font-semibold shadow">🔁 재투표</span>
                       )}
+                      {c.isRequestedReview && (
+                        <span className="absolute top-1 right-1 bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded font-semibold shadow">🔍 감별 요청</span>
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-sm truncate">{c.title}</h3>
@@ -178,20 +190,37 @@ export default function HomePage() {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold">투표하기</h2>
                   <div className="flex gap-2">
-                    <button className="px-4 py-2 rounded-lg font-semibold text-blue-700 bg-blue-100 border-2 border-blue-400 shadow hover:bg-blue-200 transition-all" title="모든 투표 보기">전체</button>
-                    <button className="px-4 py-2 rounded-lg font-semibold text-green-700 bg-green-100 border-2 border-green-400 shadow hover:bg-green-200 transition-all" title="아직 투표 가능한 콘텐츠만 보기">진행중</button>
-                    <button className="px-4 py-2 rounded-lg font-semibold text-gray-700 bg-gray-100 border-2 border-gray-400 shadow hover:bg-gray-200 transition-all" title="투표가 마감된 콘텐츠만 보기">마감됨</button>
+                    <button
+                      className={`px-4 py-2 rounded-lg font-semibold border-2 shadow transition-all ${tab === 'all' ? 'text-blue-700 bg-blue-100 border-blue-400' : 'text-blue-700 bg-white border-blue-200 hover:bg-blue-50'}`}
+                      onClick={() => setTab('all')}
+                      title="모든 투표 보기"
+                    >전체</button>
+                    <button
+                      className={`px-4 py-2 rounded-lg font-semibold border-2 shadow transition-all ${tab === 'progress' ? 'text-green-700 bg-green-100 border-green-400' : 'text-green-700 bg-white border-green-200 hover:bg-green-50'}`}
+                      onClick={() => setTab('progress')}
+                      title="아직 투표 가능한 콘텐츠만 보기"
+                    >진행중</button>
+                    <button
+                      className={`px-4 py-2 rounded-lg font-semibold border-2 shadow transition-all ${tab === 'closed' ? 'text-gray-700 bg-gray-100 border-gray-400' : 'text-gray-700 bg-white border-gray-200 hover:bg-gray-50'}`}
+                      onClick={() => setTab('closed')}
+                      title="투표가 마감된 콘텐츠만 보기"
+                    >마감됨</button>
+                    <button
+                      className={`px-4 py-2 rounded-lg font-semibold border-2 shadow transition-all ${tab === 'requested' ? 'text-yellow-700 bg-yellow-100 border-yellow-400' : 'text-yellow-700 bg-white border-yellow-200 hover:bg-yellow-50'}`}
+                      onClick={() => setTab('requested')}
+                      title="감별 의뢰된 콘텐츠만 보기"
+                    >감별 의뢰</button>
                   </div>
                 </div>
                 {loading ? (
                   <div className="text-center text-gray-500 py-12">로딩 중...</div>
                 ) : error ? (
                   <div className="text-center text-red-500 py-12">{error}</div>
-                ) : contents.length === 0 ? (
+                ) : filteredContents(tab, contents).length === 0 ? (
                   <div className="text-center text-gray-400 py-12">표시할 콘텐츠가 없습니다.</div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {contents.map((c: any) => (
+                    {filteredContents(tab, contents).map((c: any) => (
                       <div key={c._id} className="rounded-xl border shadow-lg p-4 bg-gray-50 hover:shadow-2xl transition-all cursor-pointer" onClick={() => window.location.href = `/vote/${c._id}`}>
                         <div className="relative mb-3 group">
                           <img src={c.mediaUrl.startsWith('http') ? c.mediaUrl : `http://localhost:5000${c.mediaUrl}`} alt={c.title} className="rounded-lg w-full h-48 object-cover group-hover:scale-105 group-hover:shadow-xl transition-transform duration-200" />
@@ -199,6 +228,9 @@ export default function HomePage() {
                           {c.isAnswerRevealed && <span className="absolute top-2 left-2 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded">정답 공개됨</span>}
                           {c.isRecycled && (
                             <span className="absolute top-2 left-2 bg-pink-100 text-pink-600 text-xs px-2 py-1 rounded font-semibold shadow">🔁 재투표</span>
+                          )}
+                          {c.isRequestedReview && (
+                            <span className="absolute top-2 right-2 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded font-semibold shadow">🔍 감별 요청</span>
                           )}
                         </div>
                         <h3 className="text-lg font-semibold mb-1 truncate">{c.title}</h3>

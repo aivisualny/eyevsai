@@ -16,7 +16,8 @@ export default function UploadPage() {
     category: 'other',
     difficulty: 'medium',
     tags: '',
-    isAI: 'false'
+    isAI: 'false',
+    isRequestedReview: false
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState('');
@@ -76,6 +77,7 @@ export default function UploadPage() {
       uploadFormData.append('difficulty', formData.difficulty);
       uploadFormData.append('tags', formData.tags);
       uploadFormData.append('isAI', formData.isAI);
+      uploadFormData.append('isRequestedReview', formData.isRequestedReview);
       uploadFormData.append('media', selectedFile);
 
       await uploadContent(uploadFormData);
@@ -260,6 +262,20 @@ export default function UploadPage() {
                   실제 콘텐츠
                 </label>
               </div>
+            </div>
+
+            {/* 감별 의뢰 체크박스 */}
+            <div>
+              <label className="flex items-center mt-2">
+                <input
+                  type="checkbox"
+                  name="isRequestedReview"
+                  checked={formData.isRequestedReview}
+                  onChange={e => setFormData({ ...formData, isRequestedReview: e.target.checked })}
+                  className="mr-2"
+                />
+                <span className="text-sm text-blue-700 font-semibold">감별 의뢰입니다 <span className="text-gray-500">(본인도 진위 여부를 모를 때 체크)</span></span>
+              </label>
             </div>
 
             <div>

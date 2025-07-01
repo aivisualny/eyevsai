@@ -20,9 +20,14 @@ const commentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  likesCount: {
+  likes: {
     type: Number,
     default: 0
+  },
+  vote: {
+    type: String,
+    enum: ['agree', 'disagree', 'none'],
+    default: 'none'
   }
 });
 

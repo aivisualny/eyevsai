@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
-import { getMe, getMyVotesFiltered, getMyVoteStats, getMyBadges, getFollowers, getFollowing } from "@/lib/api";
+import { getMe, getMyVotesFiltered, getMyVoteStats, getMyBadges, getFollowers, getFollowing, getMyRequestedReviews } from "@/lib/api";
 import { User, Vote, VoteStats, UserBadge } from "@/types/content";
 
 export default function MyPage() {
@@ -16,6 +16,7 @@ export default function MyPage() {
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [showFollowList, setShowFollowList] = useState<'followers' | 'following' | null>(null);
+  const [requestedReviews, setRequestedReviews] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -33,13 +34,15 @@ export default function MyPage() {
         setBadges(badgesData.badges || []);
         
         // 정답/오답 투표 내역 가져오기
-        const [correctData, wrongData] = await Promise.all([
+        const [correctData, wrongData, requestedData] = await Promise.all([
           getMyVotesFiltered({ isCorrect: true, limit: 50 }),
-          getMyVotesFiltered({ isCorrect: false, limit: 50 })
+          getMyVotesFiltered({ isCorrect: false, limit: 50 }),
+          getMyRequestedReviews({ limit: 50 })
         ]);
         
         setCorrectVotes(correctData.votes || []);
         setWrongVotes(wrongData.votes || []);
+        setRequestedReviews(requestedData.contents || []);
         // 팔로워/팔로잉 목록
         const [followersData, followingData] = await Promise.all([
           getFollowers(userData.user?.id || userData.id),
@@ -176,6 +179,7 @@ export default function MyPage() {
               { id: 'overview', label: '📊 개요', count: null },
               { id: 'correct', label: '✅ 맞힌 콘텐츠', count: correctVotes.length },
               { id: 'wrong', label: '❌ 틀린 콘텐츠', count: wrongVotes.length },
+              { id: 'requested', label: '🔍 감별 요청', count: requestedReviews.length },
               { id: 'badges', label: '🏅 뱃지', count: badges.length }
             ].map((tabItem) => (
               <button
@@ -273,6 +277,42 @@ export default function MyPage() {
                   </div>
                 ) : (
                   wrongVotes.map(renderVoteItem)
+                )}
+              </div>
+            </div>
+          )}
+
+          {tab === 'requested' && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">내가 요청한 감별 콘텐츠 ({requestedReviews.length}개)</h3>
+              <div className="space-y-3">
+                {requestedReviews.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    아직 감별을 요청한 콘텐츠가 없습니다.
+                    <br />
+                    <span className="text-sm">업로드 시 "감별 의뢰입니다"를 체크해보세요!</span>
+                  </div>
+                ) : (
+                  requestedReviews.map((content: any) => (
+                    <div key={content._id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <div className="w-12 h-12 bg-gray-200 rounded overflow-hidden">
+                        <img 
+                          src={`http://localhost:5000${content.mediaUrl}`} 
+                          alt={content.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium">{content.title}</div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(content.createdAt).toLocaleDateString('ko-KR')} • {content.totalVotes || 0}명 참여
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">감별 요청</span>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             </div>

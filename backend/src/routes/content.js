@@ -119,7 +119,7 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
       return res.status(400).json({ error: 'Media file is required' });
     }
 
-    const { title, description, category, tags, difficulty, isAI } = req.body;
+    const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
     
     // Determine media type
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
@@ -133,6 +133,7 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
       tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
       difficulty: difficulty || 'medium',
       isAI: isAI === 'true',
+      isRequestedReview: isRequestedReview === 'true',
       uploadedBy: req.user._id
     });
 
@@ -177,6 +178,36 @@ router.get('/user/uploads', auth, async (req, res) => {
   } catch (error) {
     console.error('Get user uploads error:', error);
     res.status(500).json({ error: 'Failed to fetch user uploads' });
+  }
+});
+
+// Get user's requested review content
+router.get('/user/requested-reviews', auth, async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    
+    const contents = await Content.find({ 
+      uploadedBy: req.user._id,
+      isRequestedReview: true 
+    })
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Content.countDocuments({ 
+      uploadedBy: req.user._id,
+      isRequestedReview: true 
+    });
+
+    res.json({
+      contents,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total
+    });
+  } catch (error) {
+    console.error('Get requested reviews error:', error);
+    res.status(500).json({ error: 'Failed to fetch requested reviews' });
   }
 });
 
