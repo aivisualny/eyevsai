@@ -24,7 +24,7 @@ export default function ArchivePage() {
         setContents(list);
         // generator 종류 추출
         const gens = Array.from(new Set(list.map((c: any) => c.generator).filter(Boolean)));
-        setGenerators(gens);
+        setGenerators(gens as string[]);
       } catch (e) {
         setError("콘텐츠를 불러오지 못했습니다.");
       } finally {
