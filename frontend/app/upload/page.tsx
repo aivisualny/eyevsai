@@ -38,7 +38,7 @@ export default function UploadPage() {
       }
       const data = await getMe();
       setUser(data.user);
-    } catch (error) {
+    } catch (error: any) {
       alert('로그인이 필요합니다.');
       window.location.href = '/login';
     } finally {
@@ -83,7 +83,7 @@ export default function UploadPage() {
       await uploadContent(uploadFormData);
       alert('콘텐츠가 성공적으로 업로드되었습니다! 관리자 승인 후 공개됩니다.');
       window.location.href = '/';
-    } catch (error) {
+    } catch (error: any) {
       setError(error.response?.data?.error || '업로드에 실패했습니다.');
     } finally {
       setUploading(false);
