@@ -8,9 +8,27 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    const userData = searchParams.get('user');
+    const error = searchParams.get('error');
+    
+    if (error) {
+      alert(error);
+      window.location.href = '/login';
+      return;
+    }
     
     if (token) {
       localStorage.setItem('token', token);
+      
+      if (userData) {
+        try {
+          const user = JSON.parse(decodeURIComponent(userData));
+          localStorage.setItem('user', JSON.stringify(user));
+        } catch (error) {
+          console.error('사용자 정보 파싱 오류:', error);
+        }
+      }
+      
       window.location.href = '/';
     } else {
       alert('로그인에 실패했습니다.');

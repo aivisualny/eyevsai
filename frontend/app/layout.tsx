@@ -17,6 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
+      <head>
+        <link rel="icon" href="/icon.png" />
+      </head>
       <body className={inter.className}>
         <div className="min-h-screen bg-gray-50">
           {children}

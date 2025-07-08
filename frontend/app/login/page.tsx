@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { login } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -13,6 +13,15 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    // URL에서 에러 메시지 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorMessage = urlParams.get('error');
+    if (errorMessage) {
+      setError(decodeURIComponent(errorMessage));
+    }
+  }, []);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -36,6 +45,11 @@ export default function LoginPage() {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    window.location.href = `${baseUrl}/api/auth/${provider}`;
   };
 
   return (
@@ -109,21 +123,21 @@ export default function LoginPage() {
           <div className="space-y-3">
             <Button
               type="button"
-              onClick={() => window.location.href = 'http://localhost:5000/api/auth/google'}
+              onClick={() => handleSocialLogin('google')}
               className="w-full bg-red-600 hover:bg-red-700"
             >
               Google로 로그인
             </Button>
             <Button
               type="button"
-              onClick={() => window.location.href = 'http://localhost:5000/api/auth/facebook'}
+              onClick={() => handleSocialLogin('facebook')}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
               Facebook으로 로그인
             </Button>
             <Button
               type="button"
-              onClick={() => window.location.href = 'http://localhost:5000/api/auth/kakao'}
+              onClick={() => handleSocialLogin('kakao')}
               className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
             >
               카카오톡으로 로그인

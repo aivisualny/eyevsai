@@ -47,6 +47,16 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  // 소셜 로그인 관련 필드
+  socialProvider: {
+    type: String,
+    enum: ['google', 'facebook', 'kakao', null],
+    default: null
+  },
+  socialId: {
+    type: String,
+    default: null
+  },
   badges: [{
     badge: {
       type: mongoose.Schema.Types.ObjectId,

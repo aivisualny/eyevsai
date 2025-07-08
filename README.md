@@ -35,6 +35,7 @@ EyeVSAI는 사용자들이 AI 생성 콘텐츠와 실제 콘텐츠를 구분하�
 - **결과 공개**: 마감 후 정답과 AI 생성 도구 정보 공개
 - **보상 시스템**: 정확한 판단에 대한 포인트와 뱃지 제공
 - **데이터 수집**: 사람의 판단 기반 데이터를 AI 개선에 활용
+- **소셜 로그인**: Google, Facebook, Kakao 소셜 로그인 지원
 
 ## 🚀 3차 MVP 핵심 기능
 
@@ -57,6 +58,12 @@ EyeVSAI는 사용자들이 AI 생성 콘텐츠와 실제 콘텐츠를 구분하�
 - **댓글 시스템**: 콘텐츠별 감상평 및 토론
 - **정답률 시각화**: 실시간 투표 결과 표시
 - **랭킹 경쟁**: 사용자 간 정답률 비교
+
+### 🔐 소셜 로그인
+- **Google 로그인**: Google OAuth 2.0 지원
+- **Facebook 로그인**: Facebook OAuth 2.0 지원
+- **Kakao 로그인**: Kakao OAuth 2.0 지원
+- **통합 계정 관리**: 소셜 계정과 일반 계정 연동
 
 ## 📱 주요 페이지
 
@@ -89,12 +96,19 @@ EyeVSAI는 사용자들이 AI 생성 콘텐츠와 실제 콘텐츠를 구분하�
 - **뱃지 표시**: 사용자별 획득 뱃지 표시
 - **급상승 유저**: 최근 성과 향상 사용자
 
+### 6. 로그인/회원가입 페이지
+- **일반 로그인**: 이메일/비밀번호 로그인
+- **소셜 로그인**: Google, Facebook, Kakao 로그인
+- **회원가입**: 일반 회원가입
+- **에러 처리**: 소셜 로그인 실패 시 적절한 에러 메시지
+
 ## 🛠️ 기술 스택
 
 ### Backend
 - **Node.js** + **Express.js**
 - **MongoDB** + **Mongoose**
 - **JWT** 인증
+- **Passport.js** 소셜 로그인
 - **Multer** 파일 업로드
 
 ### Frontend
@@ -109,12 +123,16 @@ EyeVSAI는 사용자들이 AI 생성 콘텐츠와 실제 콘텐츠를 구분하�
 eyevsai/
 ├── backend/
 │   ├── src/
+│   │   ├── config/
+│   │   │   ├── passport.js       # 소셜 로그인 설정
+│   │   │   └── database.js       # 데이터베이스 설정
 │   │   ├── models/
-│   │   │   ├── User.js          # 사용자 모델 (뱃지, 통계 추가)
+│   │   │   ├── User.js          # 사용자 모델 (소셜 로그인 필드 추가)
 │   │   │   ├── Vote.js          # 투표 모델 (정답률 추적)
 │   │   │   ├── Badge.js         # 뱃지 모델 (신규)
 │   │   │   └── Comment.js       # 댓글 모델
 │   │   ├── routes/
+│   │   │   ├── auth.js          # 인증 API (소셜 로그인 추가)
 │   │   │   ├── votes.js         # 투표 API (뱃지 시스템 연동)
 │   │   │   ├── badges.js        # 뱃지 API (신규)
 │   │   │   └── ...
@@ -123,6 +141,8 @@ eyevsai/
 │   └── package.json
 ├── frontend/
 │   ├── app/
+│   │   ├── login/               # 로그인 페이지 (소셜 로그인 추가)
+│   │   ├── auth-callback/       # 소셜 로그인 콜백 페이지
 │   │   ├── mypage/              # 마이페이지 (완전 새로 구현)
 │   │   ├── stats/               # 통계 페이지 (업데이트)
 │   │   ├── ranking/             # 랭킹 페이지 (업데이트)
@@ -157,8 +177,7 @@ eyevsai/
 ```bash
 # Backend
 cd backend
-cp env.example .env
-# .env 파일에서 데이터베이스 설정
+# .env 파일 생성 및 환경변수 설정
 
 # Frontend
 cd frontend
@@ -194,6 +213,14 @@ npm run dev
 
 ## 📊 API 엔드포인트
 
+### 인증 관련
+- `POST /api/auth/register` - 회원가입
+- `POST /api/auth/login` - 로그인
+- `GET /api/auth/me` - 내 정보 조회
+- `GET /api/auth/google` - Google 소셜 로그인
+- `GET /api/auth/facebook` - Facebook 소셜 로그인
+- `GET /api/auth/kakao` - Kakao 소셜 로그인
+
 ### 뱃지 관련
 - `GET /api/badges` - 모든 뱃지 조회
 - `GET /api/badges/my` - 내 뱃지 조회
@@ -205,7 +232,6 @@ npm run dev
 
 ### 기존 API
 - `POST /api/votes` - 투표 (뱃지 시스템 연동)
-- `GET /api/auth/me` - 내 정보 (뱃지 포함)
 - `GET /api/admin/ranking` - 랭킹 (뱃지 포함)
 
 ## 🎨 주요 UI/UX 개선사항

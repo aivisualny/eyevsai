@@ -126,8 +126,26 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get('/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    const token = generateToken(req.user._id);
-    res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}`);
+    try {
+      const token = generateToken(req.user._id);
+      const userInfo = {
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        role: req.user.role,
+        points: req.user.points,
+        totalVotes: req.user.totalVotes,
+        correctVotes: req.user.correctVotes,
+        avatar: req.user.avatar,
+        socialProvider: req.user.socialProvider
+      };
+      
+      const userData = encodeURIComponent(JSON.stringify(userInfo));
+      res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
+    } catch (error) {
+      console.error('Google callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=소셜 로그인에 실패했습니다.`);
+    }
   }
 );
 
@@ -136,8 +154,26 @@ router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }))
 router.get('/facebook/callback',
   passport.authenticate('facebook', { failureRedirect: '/login' }),
   (req, res) => {
-    const token = generateToken(req.user._id);
-    res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}`);
+    try {
+      const token = generateToken(req.user._id);
+      const userInfo = {
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        role: req.user.role,
+        points: req.user.points,
+        totalVotes: req.user.totalVotes,
+        correctVotes: req.user.correctVotes,
+        avatar: req.user.avatar,
+        socialProvider: req.user.socialProvider
+      };
+      
+      const userData = encodeURIComponent(JSON.stringify(userInfo));
+      res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
+    } catch (error) {
+      console.error('Facebook callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=소셜 로그인에 실패했습니다.`);
+    }
   }
 );
 
@@ -146,8 +182,26 @@ router.get('/kakao', passport.authenticate('kakao'));
 router.get('/kakao/callback',
   passport.authenticate('kakao', { failureRedirect: '/login' }),
   (req, res) => {
-    const token = generateToken(req.user._id);
-    res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}`);
+    try {
+      const token = generateToken(req.user._id);
+      const userInfo = {
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        role: req.user.role,
+        points: req.user.points,
+        totalVotes: req.user.totalVotes,
+        correctVotes: req.user.correctVotes,
+        avatar: req.user.avatar,
+        socialProvider: req.user.socialProvider
+      };
+      
+      const userData = encodeURIComponent(JSON.stringify(userInfo));
+      res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
+    } catch (error) {
+      console.error('Kakao callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=소셜 로그인에 실패했습니다.`);
+    }
   }
 );
 
