@@ -93,7 +93,7 @@ export default function MyPage() {
   );
 
   const renderVoteItem = (vote: any) => (
-    <div key={vote.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50">
+    <div key={vote.id || vote._id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 mb-2">
       <div className={`px-2 py-1 rounded text-xs font-semibold text-white ${
         vote.isCorrect ? 'bg-green-500' : 'bg-red-500'
       }`}>
@@ -102,7 +102,13 @@ export default function MyPage() {
       <div className="flex-1">
         <div className="font-medium">{vote.content?.title || '제목 없음'}</div>
         <div className="text-sm text-gray-500">
-          {new Date(vote.createdAt).toLocaleDateString('ko-KR')}
+          {new Date(vote.createdAt || vote.votedAt).toLocaleDateString('ko-KR')}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          투표: {vote.vote === 'ai' ? '🤖 AI 생성' : '👤 실제 콘텐츠'}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {vote.content?.description || '설명 없음'}
         </div>
       </div>
       <div className="text-right">
@@ -110,6 +116,25 @@ export default function MyPage() {
       </div>
     </div>
   );
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/';
+  };
+
+  const handleWithdraw = async () => {
+    if (!window.confirm('정말로 회원탈퇴 하시겠습니까? 모든 데이터가 삭제됩니다.')) return;
+    try {
+      await withdraw();
+      alert('회원탈퇴가 완료되었습니다.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/';
+    } catch (e) {
+      alert('회원탈퇴에 실패했습니다.');
+    }
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 py-10 px-4">
@@ -135,6 +160,10 @@ export default function MyPage() {
             <div className="text-right">
               <div className="text-sm text-gray-500">연속 정답</div>
               <div className="text-2xl font-bold text-orange-600">{user.consecutiveCorrect}회</div>
+              <div className="mt-4 flex flex-col gap-2">
+                <Button variant="outline" onClick={handleLogout}>로그아웃</Button>
+                <Button variant="destructive" onClick={handleWithdraw}>회원탈퇴</Button>
+              </div>
             </div>
           </div>
           {/* 팔로워/팔로잉 수 및 목록 버튼 */}
@@ -253,32 +282,22 @@ export default function MyPage() {
           )}
 
           {tab === 'correct' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">내가 맞힌 콘텐츠 ({correctVotes.length}개)</h3>
-              <div className="space-y-3">
-                {correctVotes.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    아직 맞힌 콘텐츠가 없습니다.
-                  </div>
-                ) : (
-                  correctVotes.map((vote: any) => renderVoteItem(vote))
-                )}
-              </div>
+            <div className="space-y-2">
+              {correctVotes.length === 0 ? (
+                <div className="text-gray-400 text-center py-8">아직 맞힌 콘텐츠가 없습니다.</div>
+              ) : (
+                correctVotes.map(renderVoteItem)
+              )}
             </div>
           )}
 
           {tab === 'wrong' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">내가 틀린 콘텐츠 ({wrongVotes.length}개)</h3>
-              <div className="space-y-3">
-                {wrongVotes.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    아직 틀린 콘텐츠가 없습니다.
-                  </div>
-                ) : (
-                  wrongVotes.map((vote: any) => renderVoteItem(vote))
-                )}
-              </div>
+            <div className="space-y-2">
+              {wrongVotes.length === 0 ? (
+                <div className="text-gray-400 text-center py-8">아직 틀린 콘텐츠가 없습니다.</div>
+              ) : (
+                wrongVotes.map(renderVoteItem)
+              )}
             </div>
           )}
 
@@ -334,27 +353,6 @@ export default function MyPage() {
               </div>
             </div>
           )}
-        </div>
-        <div className="mt-10 flex justify-end">
-          <Button
-            variant="outline"
-            className="border-red-400 text-red-600 hover:bg-red-50"
-            onClick={async () => {
-              if (window.confirm('정말로 회원탈퇴를 진행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
-                try {
-                  await withdraw();
-                  localStorage.removeItem('token');
-                  localStorage.removeItem('user');
-                  alert('회원탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
-                  window.location.href = '/';
-                } catch (e: any) {
-                  alert(e?.response?.data?.error || '회원탈퇴에 실패했습니다.');
-                }
-              }
-            }}
-          >
-            회원탈퇴
-          </Button>
         </div>
       </div>
     </main>
