@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Header from '../components/ui/Header';
-import { useEffect, useState } from 'react';
+import ClientHeader from '../components/ClientHeader';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,39 +16,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    // 로그인 상태 확인
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-    if (token && userStr) {
-      try {
-        setUser(JSON.parse(userStr));
-      } catch {
-        setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
-      window.location.href = '/';
-    }
-  };
-
   return (
     <html lang="ko">
       <head>
         <link rel="icon" href="/icon.png" />
       </head>
       <body className={inter.className}>
-        <Header user={user} onLogout={handleLogout} />
+        <ClientHeader />
         <div className="min-h-screen bg-gray-50">
           {children}
         </div>
