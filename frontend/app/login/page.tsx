@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { login } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -13,13 +14,18 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const router = useRouter();
 
   useEffect(() => {
     // URL에서 에러 메시지 확인
     const urlParams = new URLSearchParams(window.location.search);
     const errorMessage = urlParams.get('error');
     if (errorMessage) {
-      setError(decodeURIComponent(errorMessage));
+      if (errorMessage === 'user_cancelled') {
+        setError('소셜 로그인이 취소되었습니다. 다시 시도해주세요.');
+      } else {
+        setError(decodeURIComponent(errorMessage));
+      }
     }
   }, []);
 

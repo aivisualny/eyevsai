@@ -123,7 +123,12 @@ router.post('/login', async (req, res) => {
 // Social Login Routes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback', 
+router.get('/google/callback', (req, res, next) => {
+  if (req.query.error === 'access_denied') {
+    return res.redirect('/login?error=user_cancelled');
+  }
+  next();
+},
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
     try {
@@ -139,7 +144,6 @@ router.get('/google/callback',
         avatar: req.user.avatar,
         socialProvider: req.user.socialProvider
       };
-      
       const userData = encodeURIComponent(JSON.stringify(userInfo));
       res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
     } catch (error) {
@@ -151,7 +155,12 @@ router.get('/google/callback',
 
 router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 
-router.get('/facebook/callback',
+router.get('/facebook/callback', (req, res, next) => {
+  if (req.query.error === 'access_denied') {
+    return res.redirect('/login?error=user_cancelled');
+  }
+  next();
+},
   passport.authenticate('facebook', { failureRedirect: '/login' }),
   (req, res) => {
     try {
@@ -167,7 +176,6 @@ router.get('/facebook/callback',
         avatar: req.user.avatar,
         socialProvider: req.user.socialProvider
       };
-      
       const userData = encodeURIComponent(JSON.stringify(userInfo));
       res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
     } catch (error) {
@@ -179,7 +187,12 @@ router.get('/facebook/callback',
 
 router.get('/kakao', passport.authenticate('kakao'));
 
-router.get('/kakao/callback',
+router.get('/kakao/callback', (req, res, next) => {
+  if (req.query.error === 'access_denied') {
+    return res.redirect('/login?error=user_cancelled');
+  }
+  next();
+},
   passport.authenticate('kakao', { failureRedirect: '/login' }),
   (req, res) => {
     try {
@@ -195,7 +208,6 @@ router.get('/kakao/callback',
         avatar: req.user.avatar,
         socialProvider: req.user.socialProvider
       };
-      
       const userData = encodeURIComponent(JSON.stringify(userInfo));
       res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
     } catch (error) {
