@@ -4,7 +4,10 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 const KakaoStrategy = require('passport-kakao').Strategy;
 const User = require('../models/User');
 
-const BASE_URL = process.env.BASE_URL || '';
+let BASE_URL = process.env.BASE_URL || '';
+if (BASE_URL.startsWith('http://')) {
+  BASE_URL = BASE_URL.replace('http://', 'https://');
+}
 
 // Google OAuth
 passport.use(new GoogleStrategy({
