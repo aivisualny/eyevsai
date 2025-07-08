@@ -162,7 +162,7 @@ export default function MyPage() {
               <div className="text-2xl font-bold text-orange-600">{user.consecutiveCorrect}회</div>
               <div className="mt-4 flex flex-col gap-2">
                 <Button variant="outline" onClick={handleLogout}>로그아웃</Button>
-                <Button variant="destructive" onClick={handleWithdraw}>회원탈퇴</Button>
+                <Button variant="outline" onClick={handleWithdraw} className="border-red-400 text-red-600 hover:bg-red-50">회원탈퇴</Button>
               </div>
             </div>
           </div>
