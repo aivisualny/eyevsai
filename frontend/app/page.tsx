@@ -5,7 +5,6 @@ import { getContents, getMe, getRanking, getMyBadges } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
-import Header from '../components/ui/Header';
 
 // 통계 mock 데이터 (실제 API 연동 시 교체)
 const stats = [
@@ -101,7 +100,6 @@ export default function HomePage() {
 
   return (
     <>
-      <Header user={user} onLogout={() => {}} onWithdraw={() => {}} />
       <main className="min-h-screen bg-gray-50">
         {/* 히어로 영역 */}
         <section className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-16 px-4">
