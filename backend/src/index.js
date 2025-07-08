@@ -12,6 +12,10 @@ const seedData = require('./utils/seedData');
 const passport = require('./config/passport');
 
 const app = express();
+
+// trust proxy 설정 (Render, Vercel 등 프록시 환경에서 HTTPS 인식)
+app.set('trust proxy', true);
+
 const PORT = process.env.PORT || 5000;
 
 // Middleware
