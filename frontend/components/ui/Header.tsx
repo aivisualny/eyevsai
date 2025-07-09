@@ -14,7 +14,7 @@ const Header = ({ user, onLogout, onWithdraw }: {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* 로고 */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl text-blue-700">
-          <span className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center">👁️</span>
+          <img src="/eyesai_icon.png" alt="EyeVSAI Logo" className="w-8 h-8 rounded-full bg-blue-600" />
           EyeVSAI
         </Link>
         {/* 네비게이션 */}

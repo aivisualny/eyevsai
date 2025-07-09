@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <link rel="icon" href="/icon.png" />
+        <link rel="icon" href="/eyesai_icon.png" />
       </head>
       <body className={inter.className}>
         <ClientHeader />
