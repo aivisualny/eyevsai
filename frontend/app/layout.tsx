@@ -6,7 +6,7 @@ import ClientHeader from '../components/ClientHeader';
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'EyeVSAI - 당신의 눈은 AI보다 정확한가?',
+  title: 'EyeVSAI - AI 콘텐츠 감별',
   description: 'AI로 생성된 콘텐츠와 실제 콘텐츠를 구분하는 감별 커뮤니티 플랫폼',
   keywords: 'AI, 콘텐츠 감별, 딥페이크, 커뮤니티, 투표',
 }
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <link rel="icon" href="/eyesai_icon.png" />
+        <link rel="icon" href="/eyevsai_icon.png" />
       </head>
       <body className={inter.className}>
         <ClientHeader />

@@ -192,6 +192,12 @@ export async function getMyVoteStats() {
   return res.data;
 }
 
+// 전체 통계 조회
+export async function getGlobalStats() {
+  const res = await axios.get(`${API_BASE}/admin/stats`);
+  return res.data;
+}
+
 // 내 투표 내역 (필터링 지원)
 export async function getMyVotesFiltered(params?: {
   isCorrect?: boolean;

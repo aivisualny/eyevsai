@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { getContents, getMyVoteStats } from "@/lib/api";
+import { getContents, getMyVoteStats, getGlobalStats } from "@/lib/api";
 import { VoteStats } from "@/types/content";
 
 export default function StatsPage() {
@@ -28,18 +28,21 @@ export default function StatsPage() {
       setError("");
       try {
         // 전역 통계와 개인 통계를 병렬로 가져오기
-        const [contentsData, personalData] = await Promise.all([
+        const [globalData, contentsData, personalData] = await Promise.all([
+          getGlobalStats(),
           getContents(),
           getMyVoteStats().catch(() => null) // 로그인하지 않은 경우 무시
         ]);
         
         const contents = contentsData.contents || [];
         
-        // 전체 통계 집계
-        const totalVotes = contents.reduce((sum: number, c: any) => sum + (c.totalVotes || 0), 0);
-        const totalAccuracy = contents.length ? 
-          Math.round(contents.reduce((sum: number, c: any) => sum + (c.answerRate || 0), 0) / contents.length * 10) / 10 : 0;
-        const totalUploads = contents.length;
+        // 전체 통계 설정
+        setGlobalStats({
+          "전체 정답률": `${globalData.averageAccuracy}%`,
+          "총 투표 수": globalData.totalVotes.toLocaleString(),
+          "업로드된 콘텐츠": globalData.totalContents,
+          "참여자 수": globalData.totalUsers.toLocaleString()
+        });
         
         // 앱별 통계 집계
         const appMap: Record<string, { app: string; accuracy: number; uploads: number; sum: number; }> = {};
@@ -62,13 +65,6 @@ export default function StatsPage() {
           .filter((c: any) => c.totalVotes >= 5) // 최소 5표 이상
           .sort((a: any, b: any) => (a.answerRate || 0) - (b.answerRate || 0))
           .slice(0, 10);
-        
-        setGlobalStats({
-          "전체 정답률": `${totalAccuracy}%`,
-          "총 투표 수": totalVotes.toLocaleString(),
-          "업로드된 콘텐츠": totalUploads,
-          "평균 난이도": "보통"
-        });
         
         setAppStats(appStatsArr);
         setDifficultContents(difficultContentsArr);

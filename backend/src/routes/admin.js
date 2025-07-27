@@ -94,4 +94,41 @@ router.get('/ranking', async (req, res) => {
   }
 });
 
+// 전체 통계 조회 (공개 API)
+router.get('/stats', async (req, res) => {
+  try {
+    // 전체 사용자 수
+    const totalUsers = await User.countDocuments();
+    
+    // 전체 투표 수
+    const totalVotes = await Vote.countDocuments();
+    
+    // 전체 콘텐츠 수
+    const totalContents = await Content.countDocuments({ status: 'approved', isActive: true });
+    
+    // 전체 정답률 계산
+    const correctVotes = await Vote.countDocuments({ isCorrect: true });
+    const averageAccuracy = totalVotes > 0 ? Math.round((correctVotes / totalVotes) * 100) : 0;
+    
+    // 활성 사용자 수 (최근 30일 내 투표한 사용자)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const activeUsers = await User.countDocuments({
+      lastVoteDate: { $gte: thirtyDaysAgo }
+    });
+    
+    res.json({
+      totalUsers,
+      totalVotes,
+      totalContents,
+      averageAccuracy,
+      activeUsers,
+      correctVotes
+    });
+  } catch (err) {
+    console.error('전체 통계 조회 오류:', err);
+    res.status(500).json({ error: '통계 조회 실패' });
+  }
+});
+
 module.exports = router; 

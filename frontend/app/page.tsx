@@ -1,18 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getContents, getMe, getRanking, getMyBadges } from '../lib/api';
+import { getContents, getMe, getRanking, getMyBadges, getGlobalStats } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
-
-// 통계 mock 데이터 (실제 API 연동 시 교체)
-const stats = [
-  { icon: '👤', label: '참여자', value: '12,847' },
-  { icon: '✅', label: '총 투표', value: '89,234' },
-  { icon: '⬆️', label: '업로드된 콘텐츠', value: '1,234' },
-  { icon: '🏆', label: '평균 정확도', value: '67.8%' },
-];
 
 export default function HomePage() {
   const [contents, setContents] = useState<any[]>([]);
@@ -25,11 +17,13 @@ export default function HomePage() {
   const [userBadges, setUserBadges] = useState<any[]>([]);
   const [error, setError] = useState<string>('');
   const [tab, setTab] = useState<string>('all');
+  const [globalStats, setGlobalStats] = useState<any>(null);
 
   useEffect(() => {
     loadContents();
     checkAuth();
     loadRanking();
+    loadGlobalStats();
   }, [page, category, difficulty]);
 
   const loadContents = async () => {
@@ -64,6 +58,15 @@ export default function HomePage() {
       const data = await getRanking();
       setRanking(data.ranking || []);
     } catch (e: any) {}
+  };
+
+  const loadGlobalStats = async () => {
+    try {
+      const data = await getGlobalStats();
+      setGlobalStats(data);
+    } catch (e: any) {
+      console.error('전체 통계 로드 실패:', e);
+    }
   };
 
   useEffect(() => {
@@ -142,13 +145,26 @@ export default function HomePage() {
 
         {/* 통계 영역 */}
         <section className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-10 px-4">
-          {stats.map((s: any) => (
-            <div key={s.label} className="flex flex-col items-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow hover:shadow-lg transition-all">
-              <span className="text-3xl mb-2">{s.icon}</span>
-              <span className="text-2xl font-bold text-blue-700 mb-1">{s.value}</span>
-              <span className="text-gray-600 text-sm">{s.label}</span>
-            </div>
-          ))}
+          <div className="flex flex-col items-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow hover:shadow-lg transition-all">
+            <span className="text-3xl mb-2">👤</span>
+            <span className="text-2xl font-bold text-blue-700 mb-1">{globalStats?.totalUsers?.toLocaleString() || '0'}</span>
+            <span className="text-gray-600 text-sm">참여자</span>
+          </div>
+          <div className="flex flex-col items-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow hover:shadow-lg transition-all">
+            <span className="text-3xl mb-2">✅</span>
+            <span className="text-2xl font-bold text-blue-700 mb-1">{globalStats?.totalVotes?.toLocaleString() || '0'}</span>
+            <span className="text-gray-600 text-sm">총 투표</span>
+          </div>
+          <div className="flex flex-col items-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow hover:shadow-lg transition-all">
+            <span className="text-3xl mb-2">⬆️</span>
+            <span className="text-2xl font-bold text-blue-700 mb-1">{globalStats?.totalContents?.toLocaleString() || '0'}</span>
+            <span className="text-gray-600 text-sm">업로드된 콘텐츠</span>
+          </div>
+          <div className="flex flex-col items-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow hover:shadow-lg transition-all">
+            <span className="text-3xl mb-2">🏆</span>
+            <span className="text-2xl font-bold text-blue-700 mb-1">{globalStats?.averageAccuracy || '0'}%</span>
+            <span className="text-gray-600 text-sm">평균 정확도</span>
+          </div>
         </section>
 
         <div className="max-w-6xl mx-auto px-4">
