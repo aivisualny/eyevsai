@@ -211,6 +211,7 @@ npm run dev
 - Backend API: http://localhost:5000
 - Health Check: http://localhost:5000/api/health
 
+
 ## 📊 API 엔드포인트
 
 ### 인증 관련

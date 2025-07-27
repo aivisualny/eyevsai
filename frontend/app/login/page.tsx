@@ -71,10 +71,8 @@ export default function LoginPage() {
   };
 
   const handleSocialLogin = (provider: string) => {
-    // 배포 환경에서는 백엔드 URL, 로컬에서는 localhost 사용
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://eyevsai.onrender.com' 
-      : 'http://localhost:5000';
+    // 환경 변수에서 백엔드 URL 가져오기
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE?.replace('/api', '') || 'http://localhost:5000';
     window.location.href = `${baseUrl}/api/auth/${provider}`;
   };
 
