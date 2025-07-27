@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const passport = require('passport');
+const qs = require('querystring');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 
@@ -121,107 +122,341 @@ router.post('/login', async (req, res) => {
 });
 
 // Social Login Routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res) => {
+  const redirectUrl = "https://accounts.google.com/o/oauth2/v2/auth?" +
+    qs.stringify({
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/google/callback`,
+      response_type: "code",
+      scope: "openid email profile",
+      prompt: "consent",
+    });
 
-router.get('/google/callback', (req, res, next) => {
-  if (req.query.error === 'access_denied') {
-    return res.redirect('/login?error=user_cancelled');
-  }
-  next();
-},
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    try {
-      const token = generateToken(req.user._id);
-      const userInfo = {
-        id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-        role: req.user.role,
-        points: req.user.points,
-        totalVotes: req.user.totalVotes,
-        correctVotes: req.user.correctVotes,
-        avatar: req.user.avatar,
-        socialProvider: req.user.socialProvider
-      };
-      const userData = encodeURIComponent(JSON.stringify(userInfo));
+  res.redirect(redirectUrl);
+});
+
+router.get('/google/callback', async (req, res) => {
+  try {
+    if (req.query.error === 'access_denied') {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
-    } catch (error) {
-      console.error('Google callback error:', error);
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
+      return res.redirect(`${frontendUrl}/login?error=user_cancelled`);
     }
-  }
-);
 
-router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
-
-router.get('/facebook/callback', (req, res, next) => {
-  if (req.query.error === 'access_denied') {
-    return res.redirect('/login?error=user_cancelled');
-  }
-  next();
-},
-  passport.authenticate('facebook', { failureRedirect: '/login' }),
-  (req, res) => {
-    try {
-      const token = generateToken(req.user._id);
-      const userInfo = {
-        id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-        role: req.user.role,
-        points: req.user.points,
-        totalVotes: req.user.totalVotes,
-        correctVotes: req.user.correctVotes,
-        avatar: req.user.avatar,
-        socialProvider: req.user.socialProvider
-      };
-      const userData = encodeURIComponent(JSON.stringify(userInfo));
+    const { code } = req.query;
+    if (!code) {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
-    } catch (error) {
-      console.error('Facebook callback error:', error);
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
+      return res.redirect(`${frontendUrl}/login?error=인증 코드를 받지 못했습니다.`);
     }
-  }
-);
 
-router.get('/kakao', passport.authenticate('kakao'));
+    // Google OAuth 토큰 교환
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: qs.stringify({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/google/callback`,
+        grant_type: 'authorization_code',
+      }),
+    });
 
-router.get('/kakao/callback', (req, res, next) => {
-  if (req.query.error === 'access_denied') {
-    return res.redirect('/login?error=user_cancelled');
-  }
-  next();
-},
-  passport.authenticate('kakao', { failureRedirect: '/login' }),
-  (req, res) => {
-    try {
-      const token = generateToken(req.user._id);
-      const userInfo = {
-        id: req.user._id,
-        username: req.user.username,
-        email: req.user.email,
-        role: req.user.role,
-        points: req.user.points,
-        totalVotes: req.user.totalVotes,
-        correctVotes: req.user.correctVotes,
-        avatar: req.user.avatar,
-        socialProvider: req.user.socialProvider
-      };
-      const userData = encodeURIComponent(JSON.stringify(userInfo));
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
-    } catch (error) {
-      console.error('Kakao callback error:', error);
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
+    if (!tokenResponse.ok) {
+      throw new Error('Google OAuth 토큰 교환 실패');
     }
+
+    const tokenData = await tokenResponse.json();
+    
+    // Google 사용자 정보 가져오기
+    const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`,
+      },
+    });
+
+    if (!userResponse.ok) {
+      throw new Error('Google 사용자 정보 가져오기 실패');
+    }
+
+    const profile = await userResponse.json();
+
+    // 사용자 처리
+    if (!profile.email) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=이메일 정보를 가져올 수 없습니다.`);
+    }
+
+    let user = await User.findOne({ email: profile.email });
+    const username = profile.name || `user_${Date.now()}`;
+    const email = profile.email;
+    const avatar = profile.picture || null;
+
+    if (!user) {
+      user = new User({
+        username,
+        email,
+        password: 'social_login_' + Math.random().toString(36).substr(2, 9),
+        avatar,
+        socialProvider: 'google',
+        socialId: profile.id
+      });
+      await user.save();
+    } else {
+      // 소셜 정보 및 프로필 동기화
+      user.socialProvider = 'google';
+      user.socialId = profile.id;
+      user.username = username;
+      if (avatar) user.avatar = avatar;
+      await user.save();
+    }
+
+    // JWT 토큰 생성
+    const token = generateToken(user._id);
+    const userInfo = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      points: user.points,
+      totalVotes: user.totalVotes,
+      correctVotes: user.correctVotes,
+      avatar: user.avatar,
+      socialProvider: user.socialProvider
+    };
+    
+    const userData = encodeURIComponent(JSON.stringify(userInfo));
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
   }
-);
+});
+
+router.get('/facebook', (req, res) => {
+  const redirectUrl = "https://www.facebook.com/v18.0/dialog/oauth?" +
+    qs.stringify({
+      client_id: process.env.FACEBOOK_APP_ID,
+      redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/facebook/callback`,
+      response_type: "code",
+      scope: "email",
+      state: Math.random().toString(36).substr(2, 9),
+    });
+
+  res.redirect(redirectUrl);
+});
+
+router.get('/facebook/callback', async (req, res) => {
+  try {
+    if (req.query.error === 'access_denied') {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=user_cancelled`);
+    }
+
+    const { code } = req.query;
+    if (!code) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=인증 코드를 받지 못했습니다.`);
+    }
+
+    // Facebook OAuth 토큰 교환
+    const tokenResponse = await fetch('https://graph.facebook.com/v18.0/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: qs.stringify({
+        code,
+        client_id: process.env.FACEBOOK_APP_ID,
+        client_secret: process.env.FACEBOOK_APP_SECRET,
+        redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/facebook/callback`,
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error('Facebook OAuth 토큰 교환 실패');
+    }
+
+    const tokenData = await tokenResponse.json();
+    
+    // Facebook 사용자 정보 가져오기
+    const userResponse = await fetch(`https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${tokenData.access_token}`);
+
+    if (!userResponse.ok) {
+      throw new Error('Facebook 사용자 정보 가져오기 실패');
+    }
+
+    const profile = await userResponse.json();
+
+    // 사용자 처리
+    if (!profile.email) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=이메일 정보를 가져올 수 없습니다.`);
+    }
+
+    let user = await User.findOne({ email: profile.email });
+    const username = profile.name || `user_${Date.now()}`;
+    const email = profile.email;
+    const avatar = profile.picture?.data?.url || null;
+
+    if (!user) {
+      user = new User({
+        username,
+        email,
+        password: 'social_login_' + Math.random().toString(36).substr(2, 9),
+        avatar,
+        socialProvider: 'facebook',
+        socialId: profile.id
+      });
+      await user.save();
+    } else {
+      // 소셜 정보 및 프로필 동기화
+      user.socialProvider = 'facebook';
+      user.socialId = profile.id;
+      user.username = username;
+      if (avatar) user.avatar = avatar;
+      await user.save();
+    }
+
+    // JWT 토큰 생성
+    const token = generateToken(user._id);
+    const userInfo = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      points: user.points,
+      totalVotes: user.totalVotes,
+      correctVotes: user.correctVotes,
+      avatar: user.avatar,
+      socialProvider: user.socialProvider
+    };
+    
+    const userData = encodeURIComponent(JSON.stringify(userInfo));
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
+  } catch (error) {
+    console.error('Facebook callback error:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
+  }
+});
+
+router.get('/kakao', (req, res) => {
+  const redirectUrl = "https://kauth.kakao.com/oauth/authorize?" +
+    qs.stringify({
+      client_id: process.env.KAKAO_CLIENT_ID,
+      redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/kakao/callback`,
+      response_type: "code",
+      state: Math.random().toString(36).substr(2, 9),
+    });
+
+  res.redirect(redirectUrl);
+});
+
+router.get('/kakao/callback', async (req, res) => {
+  try {
+    if (req.query.error === 'access_denied') {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=user_cancelled`);
+    }
+
+    const { code } = req.query;
+    if (!code) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=인증 코드를 받지 못했습니다.`);
+    }
+
+    // Kakao OAuth 토큰 교환
+    const tokenResponse = await fetch('https://kauth.kakao.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: qs.stringify({
+        code,
+        client_id: process.env.KAKAO_CLIENT_ID,
+        client_secret: process.env.KAKAO_CLIENT_SECRET,
+        redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/kakao/callback`,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error('Kakao OAuth 토큰 교환 실패');
+    }
+
+    const tokenData = await tokenResponse.json();
+    
+    // Kakao 사용자 정보 가져오기
+    const userResponse = await fetch('https://kapi.kakao.com/v2/user/me', {
+      headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`,
+      },
+    });
+
+    if (!userResponse.ok) {
+      throw new Error('Kakao 사용자 정보 가져오기 실패');
+    }
+
+    const profile = await userResponse.json();
+
+    // 사용자 처리
+    const email = profile.kakao_account?.email;
+    if (!email) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=이메일 정보를 가져올 수 없습니다.`);
+    }
+
+    let user = await User.findOne({ email });
+    const username = profile.properties?.nickname || `user_${Date.now()}`;
+    const avatar = profile.properties?.profile_image || null;
+
+    if (!user) {
+      user = new User({
+        username,
+        email,
+        password: 'social_login_' + Math.random().toString(36).substr(2, 9),
+        avatar,
+        socialProvider: 'kakao',
+        socialId: profile.id.toString()
+      });
+      await user.save();
+    } else {
+      // 소셜 정보 및 프로필 동기화
+      user.socialProvider = 'kakao';
+      user.socialId = profile.id.toString();
+      user.username = username;
+      if (avatar) user.avatar = avatar;
+      await user.save();
+    }
+
+    // JWT 토큰 생성
+    const token = generateToken(user._id);
+    const userInfo = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      points: user.points,
+      totalVotes: user.totalVotes,
+      correctVotes: user.correctVotes,
+      avatar: user.avatar,
+      socialProvider: user.socialProvider
+    };
+    
+    const userData = encodeURIComponent(JSON.stringify(userInfo));
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
+  } catch (error) {
+    console.error('Kakao callback error:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
+  }
+});
 
 // Get current user
 router.get('/me', auth, async (req, res) => {

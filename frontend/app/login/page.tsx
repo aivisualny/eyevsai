@@ -6,7 +6,7 @@ import { login } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
-import { FaGoogle, FaFacebook, FaGithub } from 'react-icons/fa';
+import { FaGoogle, FaFacebook } from 'react-icons/fa';
 import { SiKakao } from 'react-icons/si';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
@@ -147,11 +147,7 @@ export default function LoginPage() {
             text="Continue with Google"
             onClick={() => handleSocialLogin('google')}
           />
-          <SocialButton
-            icon={<FaGithub />}
-            text="Continue with GitHub"
-            onClick={() => handleSocialLogin('github')}
-          />
+
           <SocialButton
             icon={<FaFacebook />}
             text="Continue with Facebook"
