@@ -4,16 +4,17 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 const KakaoStrategy = require('passport-kakao').Strategy;
 const User = require('../models/User');
 
-let BASE_URL = process.env.BASE_URL || '';
-if (BASE_URL.startsWith('http://')) {
-  BASE_URL = BASE_URL.replace('http://', 'https://');
+// 백엔드 서버 URL 설정 (Google OAuth 콜백용)
+let BACKEND_URL = process.env.BACKEND_URL || process.env.BASE_URL || 'http://localhost:5000';
+if (BACKEND_URL.startsWith('http://')) {
+  BACKEND_URL = BACKEND_URL.replace('http://', 'https://');
 }
 
 // Google OAuth
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: BASE_URL ? `${BASE_URL}/api/auth/google/callback` : "/api/auth/google/callback"
+  callbackURL: `${BACKEND_URL}/api/auth/google/callback`
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     if (!profile.emails || !profile.emails[0]) {
@@ -52,7 +53,7 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
   clientID: process.env.FACEBOOK_APP_ID,
   clientSecret: process.env.FACEBOOK_APP_SECRET,
-  callbackURL: BASE_URL ? `${BASE_URL}/api/auth/facebook/callback` : "/api/auth/facebook/callback",
+  callbackURL: `${BACKEND_URL}/api/auth/facebook/callback`,
   profileFields: ['id', 'displayName', 'photos', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
   try {
@@ -92,7 +93,7 @@ passport.use(new FacebookStrategy({
 passport.use(new KakaoStrategy({
   clientID: process.env.KAKAO_CLIENT_ID,
   clientSecret: process.env.KAKAO_CLIENT_SECRET,
-  callbackURL: BASE_URL ? `${BASE_URL}/api/auth/kakao/callback` : "/api/auth/kakao/callback"
+  callbackURL: `${BACKEND_URL}/api/auth/kakao/callback`
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile._json.kakao_account?.email;
