@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE = process.env.NODE_ENV === 'production' 
+  ? 'https://eyevsai.onrender.com/api' 
+  : 'http://localhost:5000/api';
 
 // JWT 토큰을 localStorage에서 가져와 헤더에 추가
 function getAuthHeaders() {
