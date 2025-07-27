@@ -145,10 +145,12 @@ router.get('/google/callback', (req, res, next) => {
         socialProvider: req.user.socialProvider
       };
       const userData = encodeURIComponent(JSON.stringify(userInfo));
-      res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
     } catch (error) {
       console.error('Google callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=소셜 로그인에 실패했습니다.`);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
     }
   }
 );
@@ -177,10 +179,12 @@ router.get('/facebook/callback', (req, res, next) => {
         socialProvider: req.user.socialProvider
       };
       const userData = encodeURIComponent(JSON.stringify(userInfo));
-      res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
     } catch (error) {
       console.error('Facebook callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=소셜 로그인에 실패했습니다.`);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
     }
   }
 );
@@ -209,10 +213,12 @@ router.get('/kakao/callback', (req, res, next) => {
         socialProvider: req.user.socialProvider
       };
       const userData = encodeURIComponent(JSON.stringify(userInfo));
-      res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${token}&user=${userData}`);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
     } catch (error) {
       console.error('Kakao callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=소셜 로그인에 실패했습니다.`);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
     }
   }
 );

@@ -16,13 +16,49 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
+  const validateForm = () => {
+    // 사용자명 검증
+    if (formData.username.length < 3 || formData.username.length > 20) {
+      setError('사용자명은 3-20자 사이여야 합니다.');
+      return false;
+    }
+    if (!/^[a-zA-Z0-9가-힣_]+$/.test(formData.username)) {
+      setError('사용자명은 영문, 숫자, 한글, 언더스코어(_)만 사용 가능합니다.');
+      return false;
+    }
+
+    // 이메일 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('올바른 이메일 형식을 입력해주세요.');
+      return false;
+    }
+
+    // 비밀번호 검증
+    if (formData.password.length < 6) {
+      setError('비밀번호는 최소 6자 이상이어야 합니다.');
+      return false;
+    }
+    if (formData.password.length > 50) {
+      setError('비밀번호는 50자 이하여야 합니다.');
+      return false;
+    }
+
+    // 비밀번호 확인
+    if (formData.password !== formData.confirmPassword) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
+    if (!validateForm()) {
       setLoading(false);
       return;
     }
@@ -79,10 +115,13 @@ export default function RegisterPage() {
                 required
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="사용자명을 입력하세요"
+                placeholder="사용자명을 입력하세요 (3-20자)"
                 minLength={3}
                 maxLength={20}
               />
+              <p className="mt-1 text-xs text-gray-500">
+                영문, 숫자, 한글, 언더스코어(_) 사용 가능
+              </p>
             </div>
 
             <div>
@@ -113,7 +152,11 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 placeholder="••••••••"
                 minLength={6}
+                maxLength={50}
               />
+              <p className="mt-1 text-xs text-gray-500">
+                최소 6자 이상, 최대 50자 이하
+              </p>
             </div>
 
             <div>
