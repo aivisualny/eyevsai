@@ -123,10 +123,13 @@ router.post('/login', async (req, res) => {
 
 // Social Login Routes
 router.get('/google', (req, res) => {
+  // 환경 변수에서 백엔드 URL 가져오기
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+  
   const redirectUrl = "https://accounts.google.com/o/oauth2/v2/auth?" +
     qs.stringify({
       client_id: process.env.GOOGLE_CLIENT_ID,
-      redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/google/callback`,
+      redirect_uri: `${backendUrl}/api/auth/google/callback`,
       response_type: "code",
       scope: "openid email profile",
       prompt: "consent",
@@ -149,6 +152,7 @@ router.get('/google/callback', async (req, res) => {
     }
 
     // Google OAuth 토큰 교환
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
@@ -158,7 +162,7 @@ router.get('/google/callback', async (req, res) => {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/google/callback`,
+        redirect_uri: `${backendUrl}/api/auth/google/callback`,
         grant_type: 'authorization_code',
       }),
     });
@@ -240,7 +244,7 @@ router.get('/facebook', (req, res) => {
   const redirectUrl = "https://www.facebook.com/v18.0/dialog/oauth?" +
     qs.stringify({
       client_id: process.env.FACEBOOK_APP_ID,
-      redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/facebook/callback`,
+      redirect_uri: 'http://localhost:5000/api/auth/facebook/callback',
       response_type: "code",
       scope: "email",
       state: Math.random().toString(36).substr(2, 9),
@@ -272,7 +276,7 @@ router.get('/facebook/callback', async (req, res) => {
         code,
         client_id: process.env.FACEBOOK_APP_ID,
         client_secret: process.env.FACEBOOK_APP_SECRET,
-        redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/facebook/callback`,
+        redirect_uri: 'http://localhost:5000/api/auth/facebook/callback',
       }),
     });
 
@@ -349,7 +353,7 @@ router.get('/kakao', (req, res) => {
   const redirectUrl = "https://kauth.kakao.com/oauth/authorize?" +
     qs.stringify({
       client_id: process.env.KAKAO_CLIENT_ID,
-      redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/kakao/callback`,
+      redirect_uri: 'http://localhost:5000/api/auth/kakao/callback',
       response_type: "code",
       state: Math.random().toString(36).substr(2, 9),
     });
@@ -380,7 +384,7 @@ router.get('/kakao/callback', async (req, res) => {
         code,
         client_id: process.env.KAKAO_CLIENT_ID,
         client_secret: process.env.KAKAO_CLIENT_SECRET,
-        redirect_uri: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/kakao/callback`,
+        redirect_uri: 'http://localhost:5000/api/auth/kakao/callback',
         grant_type: 'authorization_code',
       }),
     });
