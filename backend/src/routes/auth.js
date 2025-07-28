@@ -141,18 +141,18 @@ router.get('/google', (req, res) => {
 router.get('/google/callback', async (req, res) => {
   try {
     if (req.query.error === 'access_denied') {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=user_cancelled`);
     }
 
     const { code } = req.query;
     if (!code) {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=인증 코드를 받지 못했습니다.`);
     }
 
     // Google OAuth 토큰 교환
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = process.env.BACKEND_URL || 'https://eyevsai.onrender.com';
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
@@ -188,7 +188,7 @@ router.get('/google/callback', async (req, res) => {
 
     // 사용자 처리
     if (!profile.email) {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=이메일 정보를 가져올 수 없습니다.`);
     }
 
@@ -231,11 +231,11 @@ router.get('/google/callback', async (req, res) => {
     };
     
     const userData = encodeURIComponent(JSON.stringify(userInfo));
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
     res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
   } catch (error) {
     console.error('Google callback error:', error);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
     res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
   }
 });
@@ -256,13 +256,13 @@ router.get('/facebook', (req, res) => {
 router.get('/facebook/callback', async (req, res) => {
   try {
     if (req.query.error === 'access_denied') {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=user_cancelled`);
     }
 
     const { code } = req.query;
     if (!code) {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=인증 코드를 받지 못했습니다.`);
     }
 
@@ -276,7 +276,7 @@ router.get('/facebook/callback', async (req, res) => {
         code,
         client_id: process.env.FACEBOOK_APP_ID,
         client_secret: process.env.FACEBOOK_APP_SECRET,
-        redirect_uri: 'http://localhost:5000/api/auth/facebook/callback',
+        redirect_uri: 'https://eyevsai.onrender.com/api/auth/facebook/callback',
       }),
     });
 
@@ -297,7 +297,7 @@ router.get('/facebook/callback', async (req, res) => {
 
     // 사용자 처리
     if (!profile.email) {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=이메일 정보를 가져올 수 없습니다.`);
     }
 
@@ -340,11 +340,11 @@ router.get('/facebook/callback', async (req, res) => {
     };
     
     const userData = encodeURIComponent(JSON.stringify(userInfo));
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
     res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
   } catch (error) {
     console.error('Facebook callback error:', error);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
     res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
   }
 });
@@ -364,13 +364,13 @@ router.get('/kakao', (req, res) => {
 router.get('/kakao/callback', async (req, res) => {
   try {
     if (req.query.error === 'access_denied') {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=user_cancelled`);
     }
 
     const { code } = req.query;
     if (!code) {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=인증 코드를 받지 못했습니다.`);
     }
 
@@ -384,7 +384,7 @@ router.get('/kakao/callback', async (req, res) => {
         code,
         client_id: process.env.KAKAO_CLIENT_ID,
         client_secret: process.env.KAKAO_CLIENT_SECRET,
-        redirect_uri: 'http://localhost:5000/api/auth/kakao/callback',
+        redirect_uri: 'https://eyevsai.onrender.com/api/auth/kakao/callback',
         grant_type: 'authorization_code',
       }),
     });
@@ -411,7 +411,7 @@ router.get('/kakao/callback', async (req, res) => {
     // 사용자 처리
     const email = profile.kakao_account?.email;
     if (!email) {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=이메일 정보를 가져올 수 없습니다.`);
     }
 
@@ -453,12 +453,55 @@ router.get('/kakao/callback', async (req, res) => {
     };
     
     const userData = encodeURIComponent(JSON.stringify(userInfo));
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
     res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
   } catch (error) {
     console.error('Kakao callback error:', error);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
     res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
+  }
+});
+
+// 사용자명 중복확인
+router.get('/check-username/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    
+    // 사용자명 유효성 검사
+    if (username.length < 3 || username.length > 20) {
+      return res.status(400).json({ 
+        available: false, 
+        error: '사용자명은 3-20자 사이여야 합니다.' 
+      });
+    }
+    
+    if (!/^[a-zA-Z0-9가-힣_]+$/.test(username)) {
+      return res.status(400).json({ 
+        available: false, 
+        error: '사용자명은 영문, 숫자, 한글, 언더스코어(_)만 사용 가능합니다.' 
+      });
+    }
+
+    // 중복 확인
+    const existingUser = await User.findOne({ username });
+    
+    if (existingUser) {
+      return res.json({ 
+        available: false, 
+        error: '이미 사용 중인 사용자명입니다.' 
+      });
+    }
+
+    res.json({ 
+      available: true, 
+      message: '사용 가능한 사용자명입니다.' 
+    });
+  } catch (error) {
+    console.error('Username check error:', error);
+    res.status(500).json({ 
+      available: false, 
+      error: '사용자명 확인 중 오류가 발생했습니다.' 
+    });
   }
 });
 

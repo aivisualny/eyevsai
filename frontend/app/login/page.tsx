@@ -71,8 +71,8 @@ export default function LoginPage() {
   };
 
   const handleSocialLogin = (provider: string) => {
-    // 환경 변수에서 백엔드 URL 가져오기
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE?.replace('/api', '') || 'http://localhost:5000';
+    // Render.com 배포된 백엔드 URL 사용
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE?.replace('/api', '') || 'https://eyevsai.onrender.com';
     window.location.href = `${baseUrl}/api/auth/${provider}`;
   };
 

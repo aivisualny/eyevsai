@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5000/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://eyevsai.onrender.com/api';
 
 // JWT 토큰을 localStorage에서 가져와 헤더에 추가
 function getAuthHeaders() {
@@ -208,6 +208,12 @@ export async function getMyVotesFiltered(params?: {
     headers: getAuthHeaders(),
     params 
   });
+  return res.data;
+}
+
+// 사용자명 중복확인
+export async function checkUsername(username: string) {
+  const res = await axios.get(`${API_BASE}/auth/check-username/${username}`);
   return res.data;
 }
 
