@@ -177,27 +177,40 @@ export default function HomePage() {
                   <span className="text-2xl">🔥</span>
                   <h2 className="text-xl font-bold">오늘의 인기 콘텐츠</h2>
                 </div>
-                {contents.slice(0, 3).map((c: any) => (
-                  <div key={c._id} className="flex items-center gap-4 p-3 border rounded-lg mb-3 hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/vote/${c._id}`}>
-                    <div className="relative">
-                      <img src={c.mediaUrl.startsWith('http') ? c.mediaUrl : `http://localhost:5000${c.mediaUrl}`} alt={c.title} className="w-16 h-16 object-cover rounded" />
-                      {c.isRecycled && (
-                        <span className="absolute top-1 left-1 bg-pink-100 text-pink-600 text-xs px-2 py-0.5 rounded font-semibold shadow">🔁 재투표</span>
-                      )}
-                      {c.isRequestedReview && (
-                        <span className="absolute top-1 right-1 bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded font-semibold shadow">🔍 감별 요청</span>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm truncate">{c.title}</h3>
-                      <div className="text-xs text-gray-500">{c.totalVotes || 0}명 참여</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-green-600">{c.totalVotes ? Math.round((c.votes?.real || 0) / c.totalVotes * 100) : 0}%</div>
-                      <div className="text-xs text-gray-500">Real 비율</div>
-                    </div>
+                {contents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-2">📸</div>
+                    <p className="text-gray-500 mb-4">아직 업로드된 콘텐츠가 없습니다</p>
+                    <Button 
+                      onClick={() => window.location.href = '/upload'} 
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    >
+                      첫 콘텐츠 업로드하기
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  contents.slice(0, 3).map((c: any) => (
+                    <div key={c._id} className="flex items-center gap-4 p-3 border rounded-lg mb-3 hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/vote/${c._id}`}>
+                      <div className="relative">
+                        <img src={c.mediaUrl.startsWith('http') ? c.mediaUrl : `http://localhost:5000${c.mediaUrl}`} alt={c.title} className="w-16 h-16 object-cover rounded" />
+                        {c.isRecycled && (
+                          <span className="absolute top-1 left-1 bg-pink-100 text-pink-600 text-xs px-2 py-0.5 rounded font-semibold shadow">🔁 재투표</span>
+                        )}
+                        {c.isRequestedReview && (
+                          <span className="absolute top-1 right-1 bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded font-semibold shadow">🔍 감별 요청</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm truncate">{c.title}</h3>
+                        <div className="text-xs text-gray-500">{c.totalVotes || 0}명 참여</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-green-600">{c.totalVotes ? Math.round((c.votes?.real || 0) / c.totalVotes * 100) : 0}%</div>
+                        <div className="text-xs text-gray-500">Real 비율</div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </section>
 
               {/* 투표 카드 리스트 */}
@@ -232,7 +245,29 @@ export default function HomePage() {
                 ) : error ? (
                   <div className="text-center text-red-500 py-12">{error}</div>
                 ) : filteredContents(tab, contents).length === 0 ? (
-                  <div className="text-center text-gray-400 py-12">표시할 콘텐츠가 없습니다.</div>
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">📸</div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                      {tab === 'all' ? '아직 콘텐츠가 없습니다' : 
+                       tab === 'progress' ? '진행 중인 투표가 없습니다' :
+                       tab === 'closed' ? '마감된 투표가 없습니다' :
+                       '감별 의뢰된 콘텐츠가 없습니다'}
+                    </h3>
+                    <p className="text-gray-500 mb-6">
+                      {tab === 'all' ? '첫 번째 콘텐츠를 업로드해보세요!' :
+                       tab === 'progress' ? '새로운 투표를 기다려주세요' :
+                       tab === 'closed' ? '마감된 투표 결과를 확인해보세요' :
+                       '감별이 필요한 콘텐츠를 업로드해보세요'}
+                    </p>
+                    {tab === 'all' && (
+                      <Button 
+                        onClick={() => window.location.href = '/upload'} 
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+                      >
+                        콘텐츠 업로드하기
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredContents(tab, contents).map((c: any) => (
@@ -281,28 +316,36 @@ export default function HomePage() {
               {/* 정답률 랭킹 */}
               <section className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-xl font-bold mb-4">🏆 정답률 랭킹</h2>
-                <div className="space-y-3">
-                  {ranking.slice(0, 10).map((user: any, index: number) => (
-                    <div key={user._id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer" onClick={() => window.location.href = `/ranking`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                        index === 1 ? 'bg-gray-100 text-gray-700' :
-                        index === 2 ? 'bg-orange-100 text-orange-700' :
-                        'bg-blue-100 text-blue-700'
-                      }`}>
-                        {index + 1}
+                {ranking.length === 0 ? (
+                  <div className="text-center py-6">
+                    <div className="text-3xl mb-2">🏆</div>
+                    <p className="text-gray-500 text-sm">아직 랭킹 데이터가 없습니다</p>
+                    <p className="text-gray-400 text-xs mt-1">투표에 참여해보세요!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {ranking.slice(0, 10).map((user: any, index: number) => (
+                      <div key={user._id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer" onClick={() => window.location.href = `/ranking`}>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                          index === 1 ? 'bg-gray-100 text-gray-700' :
+                          index === 2 ? 'bg-orange-100 text-orange-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-sm">{user.username}</div>
+                          <div className="text-xs text-gray-500">{user.totalVotes}표</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-green-600">{user.accuracy}%</div>
+                          <div className="text-xs text-gray-500">{user.points}pt</div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-sm">{user.username}</div>
-                        <div className="text-xs text-gray-500">{user.totalVotes}표</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-bold text-green-600">{user.accuracy}%</div>
-                        <div className="text-xs text-gray-500">{user.points}pt</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
                 <Button 
                   onClick={() => window.location.href = '/ranking'} 
                   variant="outline" 
