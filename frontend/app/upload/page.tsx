@@ -89,8 +89,8 @@ export default function UploadPage() {
       uploadFormData.append('description', formData.description);
       uploadFormData.append('category', formData.category);
       uploadFormData.append('difficulty', formData.difficulty);
-      // 태그를 JSON 문자열로 전송
-      uploadFormData.append('tags', JSON.stringify(formData.tags));
+      // 태그를 쉼표로 구분된 문자열로 전송 (더 안전한 방식)
+      uploadFormData.append('tags', formData.tags.join(', '));
       uploadFormData.append('isAI', formData.isAI);
       uploadFormData.append('isRequestedReview', formData.isRequestedReview);
       uploadFormData.append('media', selectedFile);

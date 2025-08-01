@@ -42,14 +42,14 @@ const upload = multer({
   }
 });
 
-// Validation schemas
+// Validation schemas - 태그 검증 완전 제거
 const contentSchema = Joi.object({
   title: Joi.string().min(5).max(50).required(),
   description: Joi.string().min(10).max(300).required(),
   category: Joi.string().valid('art', 'photography', 'video', 'text', 'other'),
-  tags: Joi.any(), // 모든 타입 허용
   difficulty: Joi.string().valid('easy', 'medium', 'hard'),
   isAI: Joi.string().valid('true', 'false').required() // 문자열로 받음
+  // tags 필드 완전 제거 - 검증하지 않음
 });
 
 // Get all approved content (public)
@@ -129,29 +129,26 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     // Determine media type
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
     
-    // 태그 처리: 다양한 형태의 입력을 배열로 변환
+    // 태그 처리: 모든 형태의 입력을 안전하게 처리
     let tagsArray = [];
     console.log('Original tags:', tags, 'Type:', typeof tags);
     
-    if (tags) {
-      if (typeof tags === 'string') {
-        try {
-          // JSON 문자열인지 확인
-          const parsedTags = JSON.parse(tags);
-          if (Array.isArray(parsedTags)) {
-            tagsArray = parsedTags.filter(tag => tag && tag.trim().length > 0);
-          } else {
-            // 일반 문자열인 경우 쉼표로 구분
-            tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-          }
-        } catch (e) {
-          // JSON 파싱 실패 시 쉼표로 구분
+    try {
+      if (tags) {
+        if (typeof tags === 'string') {
+          // 쉼표로 구분된 문자열 처리 (주요 방식)
           tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        } else if (Array.isArray(tags)) {
+          // 배열인 경우 그대로 사용
+          tagsArray = tags.filter(tag => tag && tag.trim().length > 0);
+        } else {
+          // 기타 타입인 경우 빈 배열로 처리
+          tagsArray = [];
         }
-      } else if (Array.isArray(tags)) {
-        // 배열인 경우 그대로 사용
-        tagsArray = tags.filter(tag => tag && tag.trim().length > 0);
       }
+    } catch (error) {
+      console.error('Tag processing error:', error);
+      tagsArray = []; // 오류 발생 시 빈 배열로 처리
     }
     
     console.log('Processed tags array:', tagsArray);

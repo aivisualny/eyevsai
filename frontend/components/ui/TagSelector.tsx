@@ -59,21 +59,21 @@ export const TagSelector = ({ value, onChange, placeholder = "태그를 선택�
     }
   };
 
-  // 태그 색상 생성 (진짜 노션 스타일 파스텔톤)
+  // 태그 색상 생성 (진짜 연한 파스텔톤)
   const getTagColor = (tag: string) => {
     const colors = [
-      'bg-yellow-50 text-yellow-600 border-yellow-100', // 밝은 노란색
-      'bg-orange-50 text-orange-600 border-orange-100', // 밝은 살구색
-      'bg-rose-50 text-rose-600 border-rose-100',       // 밝은 산호색
-      'bg-red-50 text-red-600 border-red-100',           // 밝은 붉은색
-      'bg-lime-50 text-lime-600 border-lime-100',       // 밝은 라임색
-      'bg-emerald-50 text-emerald-600 border-emerald-100', // 밝은 에메랄드
-      'bg-cyan-50 text-cyan-600 border-cyan-100',       // 밝은 청록색
-      'bg-sky-50 text-sky-600 border-sky-100',           // 밝은 하늘색
-      'bg-indigo-50 text-indigo-600 border-indigo-100', // 밝은 인디고
-      'bg-violet-50 text-violet-600 border-violet-100', // 밝은 바이올렛
-      'bg-pink-50 text-pink-600 border-pink-100',       // 밝은 분홍색
-      'bg-stone-50 text-stone-600 border-stone-100'     // 밝은 회갈색
+      'bg-yellow-100 text-yellow-700 border-yellow-200', // 연한 노란색
+      'bg-orange-100 text-orange-700 border-orange-200', // 연한 살구색
+      'bg-rose-100 text-rose-700 border-rose-200',       // 연한 산호색
+      'bg-red-100 text-red-700 border-red-200',           // 연한 붉은색
+      'bg-lime-100 text-lime-700 border-lime-200',       // 연한 라임색
+      'bg-emerald-100 text-emerald-700 border-emerald-200', // 연한 에메랄드
+      'bg-cyan-100 text-cyan-700 border-cyan-200',       // 연한 청록색
+      'bg-sky-100 text-sky-700 border-sky-200',           // 연한 하늘색
+      'bg-indigo-100 text-indigo-700 border-indigo-200', // 연한 인디고
+      'bg-violet-100 text-violet-700 border-violet-200', // 연한 바이올렛
+      'bg-pink-100 text-pink-700 border-pink-200',       // 연한 분홍색
+      'bg-stone-100 text-stone-700 border-stone-200'     // 연한 회갈색
     ];
     const index = tag.charCodeAt(0) % colors.length;
     return colors[index];
