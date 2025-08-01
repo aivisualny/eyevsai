@@ -445,14 +445,15 @@ router.post('/analyze', auth, async (req, res) => {
   try {
     const { imageUrl, text } = req.body;
     
-    // 텍스트 기반 간단한 분석 로직
+    // TODO: 실제 AI API 연동 필요
+    // 현재는 텍스트 기반 간단한 분석 로직 (목업)
     let predictedDifficulty = 'medium';
     let predictedAccuracy = 50;
     
     if (text) {
       const textLower = text.toLowerCase();
       
-      // 키워드 기반 난이도 분석
+      // 키워드 기반 난이도 분석 (임시)
       const easyKeywords = ['쉬운', '간단한', '명확한', '분명한', '뚜렷한'];
       const hardKeywords = ['복잡한', '어려운', '모호한', '애매한', '추상적인', '세밀한'];
       
@@ -471,10 +472,14 @@ router.post('/analyze', auth, async (req, res) => {
       }
     }
     
-    // 이미지 URL이 있는 경우 추가 분석 가능
+    // TODO: 이미지 분석 API 연동
+    // 예: Google Vision API, Azure Computer Vision, AWS Rekognition 등
     if (imageUrl) {
-      // 실제 구현 시 이미지 분석 API 호출
-      // 현재는 텍스트 기반 분석만 수행
+      // 실제 구현 시:
+      // 1. 이미지를 AI 서비스로 전송
+      // 2. 이미지 내용 분석 (객체, 텍스트, 품질 등)
+      // 3. 분석 결과를 바탕으로 난이도 예측
+      console.log('이미지 분석 필요:', imageUrl);
     }
     
     res.json({ predictedDifficulty, predictedAccuracy });
@@ -483,7 +488,7 @@ router.post('/analyze', auth, async (req, res) => {
   }
 });
 
-// [AI 탐지기] 목업 분석 API
+// [AI 탐지기] 실제 AI 서비스 연동 필요
 // POST /api/analyze-content
 router.post('/analyze-content', async (req, res) => {
   const { contentId } = req.body;
@@ -495,12 +500,22 @@ router.post('/analyze-content', async (req, res) => {
     if (!content) {
       return res.status(404).json({ error: 'Content not found' });
     }
-    // 실제 분석 없이, 현재 DB에 저장된 값만 반환
-    return res.json({
-      aiDetectionResult: content.aiDetectionResult,
-      aiConfidence: content.aiConfidence,
-      detectionModel: content.detectionModel
-    });
+    
+    // TODO: 실제 AI 탐지 서비스 연동 필요
+    // 예시 구현 방향:
+    // 1. 이미지/비디오 파일을 AI 서비스로 전송
+    // 2. AI 생성 여부 분석 (GAN, Diffusion 모델 탐지)
+    // 3. 신뢰도 점수 반환
+    // 4. 사용된 모델 정보 저장
+    
+    // 현재는 목업 데이터만 반환
+    const mockResult = {
+      aiDetectionResult: content.aiDetectionResult || 'FAKE',
+      aiConfidence: content.aiConfidence || Math.floor(Math.random() * 100),
+      detectionModel: content.detectionModel || 'Mock Model v1.0'
+    };
+    
+    return res.json(mockResult);
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
   }

@@ -10,6 +10,13 @@ const auth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // 토큰 만료 시간 확인
+    const now = Math.floor(Date.now() / 1000);
+    if (decoded.exp && decoded.exp < now) {
+      return res.status(401).json({ error: 'Token expired. Please login again.' });
+    }
+    
     const user = await User.findById(decoded.userId).select('-password');
     
     if (!user || !user.isActive) {
@@ -19,6 +26,7 @@ const auth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error('Auth middleware error:', error);
     res.status(401).json({ error: 'Invalid token.' });
   }
 };

@@ -2,6 +2,21 @@ import axios from 'axios';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://eyevsai.onrender.com/api';
 
+// Axios 인터셉터 설정
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // 토큰 만료 시 로그인 페이지로 리다이렉트
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // JWT 토큰을 localStorage에서 가져와 헤더에 추가
 function getAuthHeaders() {
   if (typeof window === 'undefined') return {};
