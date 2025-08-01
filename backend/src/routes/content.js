@@ -114,10 +114,19 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     console.log('Upload request body:', req.body);
     console.log('Upload request file:', req.file);
     
-    const { error } = contentSchema.validate(req.body);
-    if (error) {
-      console.error('Validation error:', error.details[0].message);
-      return res.status(400).json({ error: error.details[0].message });
+    // 수동 검증 (Joi 스키마 우회)
+    const { title, description, category, difficulty, isAI } = req.body;
+    
+    if (!title || title.length < 5 || title.length > 50) {
+      return res.status(400).json({ error: 'Title must be between 5 and 50 characters' });
+    }
+    
+    if (!description || description.length < 10 || description.length > 300) {
+      return res.status(400).json({ error: 'Description must be between 10 and 300 characters' });
+    }
+    
+    if (!isAI || !['true', 'false'].includes(isAI)) {
+      return res.status(400).json({ error: 'isAI must be true or false' });
     }
 
     if (!req.file) {
