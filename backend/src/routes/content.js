@@ -126,8 +126,10 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     
     // 태그 처리: 쉼표로 구분된 문자열을 배열로 변환
     let tagsArray = [];
-    if (tags && tags.trim()) {
+    if (tags && typeof tags === 'string' && tags.trim()) {
       tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    } else if (Array.isArray(tags)) {
+      tagsArray = tags.filter(tag => tag && tag.trim().length > 0);
     }
     
     const content = new Content({

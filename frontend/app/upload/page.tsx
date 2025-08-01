@@ -5,6 +5,7 @@ import { uploadContent, getMe, analyzeContentAI } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
+import { TagSelector } from '../../components/ui/TagSelector';
 
 export default function UploadPage() {
   const [user, setUser] = useState<any>(null);
@@ -15,7 +16,7 @@ export default function UploadPage() {
     description: '',
     category: 'other',
     difficulty: 'medium',
-    tags: '',
+    tags: [],
     isAI: 'false',
     isRequestedReview: false
   });
@@ -88,7 +89,7 @@ export default function UploadPage() {
       uploadFormData.append('description', formData.description);
       uploadFormData.append('category', formData.category);
       uploadFormData.append('difficulty', formData.difficulty);
-      uploadFormData.append('tags', formData.tags);
+      uploadFormData.append('tags', formData.tags.join(', '));
       uploadFormData.append('isAI', formData.isAI);
       uploadFormData.append('isRequestedReview', formData.isRequestedReview);
       uploadFormData.append('media', selectedFile);
@@ -110,14 +111,11 @@ export default function UploadPage() {
     });
   };
 
-  // 태그 입력 처리 (스페이스바로 구분)
-  const handleTagInput = (e: any) => {
-    const value = e.target.value;
-    // 스페이스바로 구분된 태그들을 쉼표로 변환
-    const tagsWithCommas = value.split(' ').filter((tag: string) => tag.trim()).join(', ');
+  // 태그 변경 처리
+  const handleTagsChange = (tags: string[]) => {
     setFormData({
       ...formData,
-      tags: tagsWithCommas
+      tags: tags
     });
   };
 
@@ -280,18 +278,14 @@ export default function UploadPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                태그 (스페이스바로 구분)
+                태그
               </label>
-              <Input
-                name="tags"
-                type="text"
+              <TagSelector
                 value={formData.tags}
-                onChange={handleTagInput}
-                placeholder="예: AI아트 풍경 디지털아트"
+                onChange={handleTagsChange}
+                placeholder="태그를 선택하거나 입력하세요"
+                maxTags={10}
               />
-              <div className="text-xs text-gray-500 mt-1">
-                스페이스바를 눌러 태그를 구분하세요
-              </div>
             </div>
 
             <div>
