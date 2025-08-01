@@ -42,7 +42,7 @@ const upload = multer({
   }
 });
 
-// Validation schemas - tags 필드 허용
+// Validation schemas - tags 필드 허용 + unknown 필드 허용
 const contentSchema = Joi.object({
   title: Joi.string().min(5).max(50).required(),
   description: Joi.string().min(10).max(300).required(),
@@ -50,7 +50,7 @@ const contentSchema = Joi.object({
   difficulty: Joi.string().valid('easy', 'medium', 'hard'),
   isAI: Joi.string().valid('true', 'false').required(), // 문자열로 받음
   tags: Joi.any() // 어떤 형태든 허용 (문자열, 배열, 객체 등)
-});
+}).unknown(true); // 알 수 없는 필드도 허용
 
 // Get all approved content (public)
 router.get('/', async (req, res) => {
@@ -110,9 +110,16 @@ router.get('/:id', async (req, res) => {
 // Upload new content (authenticated users)
 router.post('/', auth, upload.single('media'), async (req, res) => {
   try {
-    // 요청 데이터 로깅
-    console.log('Upload request body:', req.body);
-    console.log('Upload request file:', req.file);
+    // 요청 데이터 상세 로깅
+    console.log('=== UPLOAD REQUEST DEBUG ===');
+    console.log('Upload request body:', JSON.stringify(req.body, null, 2));
+    console.log('Upload request file:', req.file ? {
+      filename: req.file.filename,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    } : 'No file');
+    console.log('Tags field:', req.body.tags, 'Type:', typeof req.body.tags);
+    console.log('=== END DEBUG ===');
     
     // Joi 검증으로 통합 (tags 필드 허용)
     const { error } = contentSchema.validate(req.body);
