@@ -42,14 +42,14 @@ const upload = multer({
   }
 });
 
-// Validation schemas - 태그 검증 완전 제거
+// Validation schemas - tags 필드 허용
 const contentSchema = Joi.object({
   title: Joi.string().min(5).max(50).required(),
   description: Joi.string().min(10).max(300).required(),
   category: Joi.string().valid('art', 'photography', 'video', 'text', 'other'),
   difficulty: Joi.string().valid('easy', 'medium', 'hard'),
-  isAI: Joi.string().valid('true', 'false').required() // 문자열로 받음
-  // tags 필드 완전 제거 - 검증하지 않음
+  isAI: Joi.string().valid('true', 'false').required(), // 문자열로 받음
+  tags: Joi.any() // 어떤 형태든 허용 (문자열, 배열, 객체 등)
 });
 
 // Get all approved content (public)
@@ -114,20 +114,14 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     console.log('Upload request body:', req.body);
     console.log('Upload request file:', req.file);
     
-    // 수동 검증 (Joi 스키마 우회) - 중복 제거
+    // Joi 검증으로 통합 (tags 필드 허용)
+    const { error } = contentSchema.validate(req.body);
+    if (error) {
+      console.error('Validation error:', error.details[0].message);
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
     const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
-    
-    if (!title || title.length < 5 || title.length > 50) {
-      return res.status(400).json({ error: 'Title must be between 5 and 50 characters' });
-    }
-    
-    if (!description || description.length < 10 || description.length > 300) {
-      return res.status(400).json({ error: 'Description must be between 10 and 300 characters' });
-    }
-    
-    if (!isAI || !['true', 'false'].includes(isAI)) {
-      return res.status(400).json({ error: 'isAI must be true or false' });
-    }
 
     if (!req.file) {
       return res.status(400).json({ error: 'Media file is required' });
