@@ -44,8 +44,8 @@ const upload = multer({
 
 // Validation schemas
 const contentSchema = Joi.object({
-  title: Joi.string().min(1).max(100).required(),
-  description: Joi.string().min(1).max(500).required(),
+  title: Joi.string().min(5).max(50).required(),
+  description: Joi.string().min(10).max(300).required(),
   category: Joi.string().valid('art', 'photography', 'video', 'text', 'other'),
   tags: Joi.array().items(Joi.string()),
   difficulty: Joi.string().valid('easy', 'medium', 'hard'),
@@ -124,13 +124,19 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     // Determine media type
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
     
+    // 태그 처리: 쉼표로 구분된 문자열을 배열로 변환
+    let tagsArray = [];
+    if (tags && tags.trim()) {
+      tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    }
+    
     const content = new Content({
       title,
       description,
       mediaUrl: `/uploads/${req.file.filename}`,
       mediaType,
       category: category || 'other',
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      tags: tagsArray,
       difficulty: difficulty || 'medium',
       isAI: isAI === 'true',
       isRequestedReview: isRequestedReview === 'true',
@@ -406,16 +412,43 @@ router.get('/recycle', async (req, res) => {
   }
 });
 
-// AI 난이도 분석 (샘플)
+// AI 난이도 분석 (개선된 로직)
 router.post('/analyze', auth, async (req, res) => {
   try {
-    // 실제 AI 분석 로직 대신 샘플 난이도/정답률 반환
-    // (실제 구현 시 외부 AI API 연동)
     const { imageUrl, text } = req.body;
-    // 샘플: 랜덤 난이도/정답률
-    const levels = ['easy', 'normal', 'hard'];
-    const predictedDifficulty = levels[Math.floor(Math.random() * levels.length)];
-    const predictedAccuracy = Math.floor(Math.random() * 100);
+    
+    // 텍스트 기반 간단한 분석 로직
+    let predictedDifficulty = 'medium';
+    let predictedAccuracy = 50;
+    
+    if (text) {
+      const textLower = text.toLowerCase();
+      
+      // 키워드 기반 난이도 분석
+      const easyKeywords = ['쉬운', '간단한', '명확한', '분명한', '뚜렷한'];
+      const hardKeywords = ['복잡한', '어려운', '모호한', '애매한', '추상적인', '세밀한'];
+      
+      const easyCount = easyKeywords.filter(keyword => textLower.includes(keyword)).length;
+      const hardCount = hardKeywords.filter(keyword => textLower.includes(keyword)).length;
+      
+      if (easyCount > hardCount) {
+        predictedDifficulty = 'easy';
+        predictedAccuracy = 70 + Math.floor(Math.random() * 20); // 70-90%
+      } else if (hardCount > easyCount) {
+        predictedDifficulty = 'hard';
+        predictedAccuracy = 30 + Math.floor(Math.random() * 30); // 30-60%
+      } else {
+        predictedDifficulty = 'medium';
+        predictedAccuracy = 50 + Math.floor(Math.random() * 20); // 50-70%
+      }
+    }
+    
+    // 이미지 URL이 있는 경우 추가 분석 가능
+    if (imageUrl) {
+      // 실제 구현 시 이미지 분석 API 호출
+      // 현재는 텍스트 기반 분석만 수행
+    }
+    
     res.json({ predictedDifficulty, predictedAccuracy });
   } catch (err) {
     res.status(500).json({ error: 'AI 분석 오류' });

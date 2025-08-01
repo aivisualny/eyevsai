@@ -69,6 +69,19 @@ export default function UploadPage() {
       return;
     }
 
+    // 제목과 설명 길이 검증
+    if (formData.title.length < 5) {
+      setError('제목은 최소 5자 이상 입력해주세요.');
+      setUploading(false);
+      return;
+    }
+
+    if (formData.description.length < 10) {
+      setError('설명은 최소 10자 이상 입력해주세요.');
+      setUploading(false);
+      return;
+    }
+
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('title', formData.title);
@@ -94,6 +107,17 @@ export default function UploadPage() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  // 태그 입력 처리 (스페이스바로 구분)
+  const handleTagInput = (e: any) => {
+    const value = e.target.value;
+    // 스페이스바로 구분된 태그들을 쉼표로 변환
+    const tagsWithCommas = value.split(' ').filter(tag => tag.trim()).join(', ');
+    setFormData({
+      ...formData,
+      tags: tagsWithCommas
     });
   };
 
@@ -156,7 +180,7 @@ export default function UploadPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                콘텐츠 제목 *
+                콘텐츠 제목 * (5-50자)
               </label>
               <Input
                 name="title"
@@ -165,13 +189,17 @@ export default function UploadPage() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="콘텐츠 제목을 입력하세요"
-                maxLength={100}
+                maxLength={50}
+                minLength={5}
               />
+              <div className="text-xs text-gray-500 mt-1">
+                {formData.title.length}/50자
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                설명 *
+                설명 * (10-300자)
               </label>
               <textarea
                 name="description"
@@ -179,10 +207,14 @@ export default function UploadPage() {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="콘텐츠에 대한 설명을 입력하세요"
-                maxLength={500}
+                maxLength={300}
+                minLength={10}
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
+              <div className="text-xs text-gray-500 mt-1">
+                {formData.description.length}/300자
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -208,30 +240,58 @@ export default function UploadPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   난이도
                 </label>
-                <select
-                  name="difficulty"
-                  value={formData.difficulty}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="easy">쉬움</option>
-                  <option value="medium">보통</option>
-                  <option value="hard">어려움</option>
-                </select>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="difficulty"
+                      value="easy"
+                      checked={formData.difficulty === 'easy'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    쉬움
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="difficulty"
+                      value="medium"
+                      checked={formData.difficulty === 'medium'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    보통
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="difficulty"
+                      value="hard"
+                      checked={formData.difficulty === 'hard'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    어려움
+                  </label>
+                </div>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                태그 (쉼표로 구분)
+                태그 (스페이스바로 구분)
               </label>
               <Input
                 name="tags"
                 type="text"
                 value={formData.tags}
-                onChange={handleChange}
-                placeholder="예: AI아트, 풍경, 디지털아트"
+                onChange={handleTagInput}
+                placeholder="예: AI아트 풍경 디지털아트"
               />
+              <div className="text-xs text-gray-500 mt-1">
+                스페이스바를 눌러 태그를 구분하세요
+              </div>
             </div>
 
             <div>
