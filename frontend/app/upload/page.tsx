@@ -114,7 +114,7 @@ export default function UploadPage() {
   const handleTagInput = (e: any) => {
     const value = e.target.value;
     // 스페이스바로 구분된 태그들을 쉼표로 변환
-    const tagsWithCommas = value.split(' ').filter(tag => tag.trim()).join(', ');
+    const tagsWithCommas = value.split(' ').filter((tag: string) => tag.trim()).join(', ');
     setFormData({
       ...formData,
       tags: tagsWithCommas
