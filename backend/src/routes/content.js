@@ -6,6 +6,7 @@ const Joi = require('joi');
 const Content = require('../models/Content');
 const { auth, adminAuth } = require('../middleware/auth');
 const Comment = require('../models/Comment');
+const Report = require('../models/Report');
 
 const router = express.Router();
 
@@ -192,7 +193,8 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
       difficulty: difficulty || 'medium',
       isAI: isAI === 'true',
       isRequestedReview: isRequestedReview === 'true',
-      uploadedBy: req.user._id
+      uploadedBy: req.user._id,
+      status: 'approved' // 바로 승인 상태로 변경
     });
 
     await content.save();
@@ -343,57 +345,72 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// Admin: Get pending content
+// Admin: Get reported content (신고된 콘텐츠 목록)
 router.get('/admin/pending', adminAuth, async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     
-    const contents = await Content.find({ status: 'pending' })
-      .populate('uploadedBy', 'username email')
+    // 신고된 콘텐츠들을 가져옴
+    const reports = await Report.find({ status: 'pending' })
+      .populate('content', 'title description mediaUrl mediaType category uploadedBy')
+      .populate('reporter', 'username')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
-    const total = await Content.countDocuments({ status: 'pending' });
+    const total = await Report.countDocuments({ status: 'pending' });
 
     res.json({
-      contents,
+      reports,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       total
     });
   } catch (error) {
-    console.error('Get pending content error:', error);
-    res.status(500).json({ error: 'Failed to fetch pending content' });
+    console.error('Get reported content error:', error);
+    res.status(500).json({ error: 'Failed to fetch reported content' });
   }
 });
 
-// Admin: Approve/Reject content
+// Admin: Handle reported content (신고된 콘텐츠 처리)
 router.patch('/admin/:id/status', adminAuth, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { action, adminNote } = req.body;
     
-    if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
     }
 
-    const content = await Content.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    ).populate('uploadedBy', 'username');
-
-    if (!content) {
-      return res.status(404).json({ error: 'Content not found' });
+    const report = await Report.findById(req.params.id);
+    if (!report) {
+      return res.status(404).json({ error: 'Report not found' });
     }
+
+    if (action === 'reject') {
+      // 콘텐츠를 비활성화
+      await Content.findByIdAndUpdate(report.content, { isActive: false });
+      report.status = 'resolved';
+    } else {
+      // 신고를 무효화
+      report.status = 'reviewed';
+    }
+
+    report.adminNote = adminNote || '';
+    report.reviewedBy = req.user._id;
+    report.reviewedAt = new Date();
+    await report.save();
+
+    const updatedReport = await Report.findById(report._id)
+      .populate('content', 'title description mediaUrl mediaType category')
+      .populate('reporter', 'username');
 
     res.json({
-      message: `Content ${status} successfully`,
-      content
+      message: `Content ${action === 'reject' ? 'rejected' : 'approved'} successfully`,
+      report: updatedReport
     });
   } catch (error) {
-    console.error('Update content status error:', error);
-    res.status(500).json({ error: 'Failed to update content status' });
+    console.error('Update report status error:', error);
+    res.status(500).json({ error: 'Failed to update report status' });
   }
 });
 
@@ -548,6 +565,120 @@ router.post('/analyze-content', async (req, res) => {
     return res.json(mockResult);
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// 신고하기
+router.post('/:id/report', auth, async (req, res) => {
+  try {
+    const { reason, description } = req.body;
+    
+    if (!reason) {
+      return res.status(400).json({ error: '신고 사유를 선택해주세요.' });
+    }
+
+    const content = await Content.findById(req.params.id);
+    if (!content) {
+      return res.status(404).json({ error: '콘텐츠를 찾을 수 없습니다.' });
+    }
+
+    // 이미 신고한 콘텐츠인지 확인
+    const existingReport = await Report.findOne({
+      content: req.params.id,
+      reporter: req.user._id,
+      status: { $in: ['pending', 'reviewed'] }
+    });
+
+    if (existingReport) {
+      return res.status(400).json({ error: '이미 신고한 콘텐츠입니다.' });
+    }
+
+    const report = new Report({
+      content: req.params.id,
+      reporter: req.user._id,
+      reason,
+      description: description || ''
+    });
+
+    await report.save();
+
+    res.status(201).json({
+      message: '신고가 접수되었습니다.',
+      report
+    });
+  } catch (error) {
+    console.error('Report content error:', error);
+    res.status(500).json({ error: '신고 처리 중 오류가 발생했습니다.' });
+  }
+});
+
+// 신고된 콘텐츠 목록 (관리자용)
+router.get('/admin/reports', adminAuth, async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status = 'pending' } = req.query;
+    
+    const filter = { status };
+    if (status === 'all') delete filter.status;
+
+    const reports = await Report.find(filter)
+      .populate('content', 'title description mediaUrl mediaType category')
+      .populate('reporter', 'username')
+      .populate('reviewedBy', 'username')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Report.countDocuments(filter);
+
+    res.json({
+      reports,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total
+    });
+  } catch (error) {
+    console.error('Get reports error:', error);
+    res.status(500).json({ error: '신고 목록 조회 실패' });
+  }
+});
+
+// 신고 처리 (관리자용)
+router.patch('/admin/reports/:reportId', adminAuth, async (req, res) => {
+  try {
+    const { status, adminNote } = req.body;
+    
+    if (!['reviewed', 'resolved'].includes(status)) {
+      return res.status(400).json({ error: '유효하지 않은 상태입니다.' });
+    }
+
+    const report = await Report.findByIdAndUpdate(
+      req.params.reportId,
+      {
+        status,
+        adminNote: adminNote || '',
+        reviewedBy: req.user._id,
+        reviewedAt: new Date()
+      },
+      { new: true }
+    ).populate('content', 'title description mediaUrl mediaType category')
+     .populate('reporter', 'username');
+
+    if (!report) {
+      return res.status(404).json({ error: '신고를 찾을 수 없습니다.' });
+    }
+
+    // 신고가 해결되면 해당 콘텐츠를 비활성화
+    if (status === 'resolved') {
+      await Content.findByIdAndUpdate(report.content._id, { isActive: false });
+    }
+
+    res.json({
+      message: '신고가 처리되었습니다.',
+      report
+    });
+  } catch (error) {
+    console.error('Update report error:', error);
+    res.status(500).json({ error: '신고 처리 중 오류가 발생했습니다.' });
   }
 });
 
