@@ -154,9 +154,11 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     console.log('Upload request file:', req.file ? {
       filename: req.file.filename,
       mimetype: req.file.mimetype,
-      size: req.file.size
+      size: req.file.size,
+      path: req.file.path
     } : 'No file');
     console.log('Tags field:', req.body.tags, 'Type:', typeof req.body.tags);
+    console.log('Upload directory exists:', fs.existsSync(path.join(__dirname, '../../uploads')));
     console.log('=== END DEBUG ===');
     
     // Joi 검증으로 통합 (개선된 에러 응답)
