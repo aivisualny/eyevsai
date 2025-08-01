@@ -59,11 +59,13 @@ export const TagSelector = ({ value, onChange, placeholder = "태그를 선택�
     }
   };
 
-  // 태그 색상 생성
+  // 태그 색상 생성 (파스텔톤)
   const getTagColor = (tag: string) => {
     const colors = [
-      'bg-purple-600', 'bg-green-600', 'bg-blue-600', 'bg-red-600', 
-      'bg-yellow-600', 'bg-pink-600', 'bg-indigo-600', 'bg-gray-600'
+      'bg-pink-200 text-pink-800', 'bg-blue-200 text-blue-800', 'bg-green-200 text-green-800',
+      'bg-yellow-200 text-yellow-800', 'bg-purple-200 text-purple-800', 'bg-indigo-200 text-indigo-800',
+      'bg-red-200 text-red-800', 'bg-orange-200 text-orange-800', 'bg-teal-200 text-teal-800',
+      'bg-cyan-200 text-cyan-800', 'bg-lime-200 text-lime-800', 'bg-emerald-200 text-emerald-800'
     ];
     const index = tag.charCodeAt(0) % colors.length;
     return colors[index];
@@ -73,16 +75,16 @@ export const TagSelector = ({ value, onChange, placeholder = "태그를 선택�
     <div className="relative">
       {/* 선택된 태그들 */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {value.map((tag, index) => (
-          <span
-            key={index}
-            className={`${getTagColor(tag)} text-white px-3 py-1 rounded-full text-sm flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity`}
-            onClick={() => removeTag(tag)}
-          >
-            {tag}
-            <span className="text-xs">×</span>
-          </span>
-        ))}
+                 {value.map((tag, index) => (
+           <span
+             key={index}
+             className={`${getTagColor(tag)} px-3 py-1 rounded-full text-sm flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity border`}
+             onClick={() => removeTag(tag)}
+           >
+             {tag}
+             <span className="text-xs opacity-70">×</span>
+           </span>
+         ))}
       </div>
 
       {/* 입력 필드 */}
@@ -113,17 +115,17 @@ export const TagSelector = ({ value, onChange, placeholder = "태그를 선택�
               </div>
             )}
             
-            {/* 제안된 태그들 */}
-            {suggestions.map((tag, index) => (
-              <div
-                key={index}
-                className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-                onClick={() => addTag(tag)}
-              >
-                <span className={`w-3 h-3 rounded-full ${getTagColor(tag)}`}></span>
-                {tag}
-              </div>
-            ))}
+                         {/* 제안된 태그들 */}
+             {suggestions.map((tag, index) => (
+               <div
+                 key={index}
+                 className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
+                 onClick={() => addTag(tag)}
+               >
+                 <span className={`w-3 h-3 rounded-full ${getTagColor(tag).split(' ')[0]}`}></span>
+                 {tag}
+               </div>
+             ))}
           </div>
         )}
       </div>

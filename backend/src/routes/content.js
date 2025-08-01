@@ -161,7 +161,9 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     });
   } catch (error) {
     console.error('Upload content error:', error);
-    res.status(500).json({ error: 'Failed to upload content' });
+    console.error('Request body:', req.body);
+    console.error('Request file:', req.file);
+    res.status(500).json({ error: `Failed to upload content: ${error.message}` });
   }
 });
 

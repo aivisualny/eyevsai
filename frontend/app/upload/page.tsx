@@ -98,7 +98,9 @@ export default function UploadPage() {
       alert('콘텐츠가 성공적으로 업로드되었습니다! 관리자 승인 후 공개됩니다.');
       window.location.href = '/';
     } catch (error: any) {
-      setError(error.response?.data?.error || '업로드에 실패했습니다.');
+      console.error('Upload error:', error);
+      const errorMessage = error.response?.data?.error || error.message || '업로드에 실패했습니다.';
+      setError(`업로드 실패: ${errorMessage}`);
     } finally {
       setUploading(false);
     }
