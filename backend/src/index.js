@@ -1,94 +1,59 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+const mongoose = require('mongoose');
 const path = require('path');
-const session = require('express-session');
 require('dotenv').config();
-const connectDB = require('./config/database');
-const seedData = require('./utils/seedData');
 
-// Passport 초기화
-const passport = require('./config/passport');
+const authRoutes = require('./routes/auth');
+const contentRoutes = require('./routes/content');
+const voteRoutes = require('./routes/votes');
+const userRoutes = require('./routes/users');
+const badgeRoutes = require('./routes/badges');
+const adminRoutes = require('./routes/admin');
+const commentRoutes = require('./routes/comments');
 
 const app = express();
 
-// trust proxy 설정 (Render, Vercel 등 프록시 환경에서 HTTPS 인식)
-app.set('trust proxy', true);
-
-const PORT = process.env.PORT || 5000;
-
 // Middleware
-app.use(helmet());
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}));
-app.use(morgan('combined'));
-app.use(express.json({ limit: '10mb' }));
+app.use(cors());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 세션 미들웨어 (소셜 로그인용)
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24시간
-  }
-}));
-
-// Passport 미들웨어
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Static files for uploads
+// Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/content', require('./routes/content'));
-app.use('/api/votes', require('./routes/votes'));
-app.use('/api/badges', require('./routes/badges'));
-app.use('/api/comments', require('./routes/comments'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/admin', require('./routes/admin'));
+app.use('/api/auth', authRoutes);
+app.use('/api/content', contentRoutes);
+app.use('/api/votes', voteRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/badges', badgeRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/comments', commentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    version: '1.0.0'
-  });
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    error: 'Something went wrong!',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/eyevsai')
+  .then(() => {
+    console.log('✅ MongoDB 연결 성공');
+    
+    // 기존 콘텐츠 데이터 정리
+    const Content = require('./models/Content');
+    Content.deleteMany({}).then(() => {
+      console.log('🗑️ 기존 콘텐츠 데이터 정리 완료');
+    }).catch(err => {
+      console.log('⚠️ 콘텐츠 정리 중 오류:', err.message);
+    });
+  })
+  .catch(err => {
+    console.error('❌ MongoDB 연결 실패:', err);
   });
-});
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
-// DB 연결 후 서버 실행 및 시드 데이터 생성
-connectDB().then(async () => {
-  // 시드 데이터 생성
-  await seedData();
-  
-  // 기본 뱃지 생성
-  const BadgeSystem = require('./utils/badgeSystem');
-  await BadgeSystem.createDefaultBadges();
-  
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  });
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다`);
 }); 

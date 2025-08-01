@@ -59,13 +59,21 @@ export const TagSelector = ({ value, onChange, placeholder = "태그를 선택�
     }
   };
 
-  // 태그 색상 생성 (파스텔톤)
+  // 태그 색상 생성 (노션 스타일 파스텔톤)
   const getTagColor = (tag: string) => {
     const colors = [
-      'bg-pink-200 text-pink-800', 'bg-blue-200 text-blue-800', 'bg-green-200 text-green-800',
-      'bg-yellow-200 text-yellow-800', 'bg-purple-200 text-purple-800', 'bg-indigo-200 text-indigo-800',
-      'bg-red-200 text-red-800', 'bg-orange-200 text-orange-800', 'bg-teal-200 text-teal-800',
-      'bg-cyan-200 text-cyan-800', 'bg-lime-200 text-lime-800', 'bg-emerald-200 text-emerald-800'
+      'bg-red-100 text-red-700 border-red-200', 
+      'bg-orange-100 text-orange-700 border-orange-200',
+      'bg-yellow-100 text-yellow-700 border-yellow-200',
+      'bg-green-100 text-green-700 border-green-200',
+      'bg-blue-100 text-blue-700 border-blue-200',
+      'bg-purple-100 text-purple-700 border-purple-200',
+      'bg-pink-100 text-pink-700 border-pink-200',
+      'bg-gray-100 text-gray-700 border-gray-200',
+      'bg-indigo-100 text-indigo-700 border-indigo-200',
+      'bg-teal-100 text-teal-700 border-teal-200',
+      'bg-cyan-100 text-cyan-700 border-cyan-200',
+      'bg-emerald-100 text-emerald-700 border-emerald-200'
     ];
     const index = tag.charCodeAt(0) % colors.length;
     return colors[index];
@@ -78,11 +86,11 @@ export const TagSelector = ({ value, onChange, placeholder = "태그를 선택�
                  {value.map((tag, index) => (
            <span
              key={index}
-             className={`${getTagColor(tag)} px-3 py-1 rounded-full text-sm flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity border`}
+             className={`${getTagColor(tag)} px-3 py-1.5 rounded-full text-sm flex items-center gap-2 cursor-pointer hover:opacity-80 transition-all duration-200 border`}
              onClick={() => removeTag(tag)}
            >
              {tag}
-             <span className="text-xs opacity-70">×</span>
+             <span className="text-xs opacity-60 hover:opacity-100">×</span>
            </span>
          ))}
       </div>

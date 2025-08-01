@@ -47,7 +47,7 @@ const contentSchema = Joi.object({
   title: Joi.string().min(5).max(50).required(),
   description: Joi.string().min(10).max(300).required(),
   category: Joi.string().valid('art', 'photography', 'video', 'text', 'other'),
-  tags: Joi.array().items(Joi.string()),
+  tags: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()),
   difficulty: Joi.string().valid('easy', 'medium', 'hard'),
   isAI: Joi.boolean().required()
 });
@@ -110,8 +110,13 @@ router.get('/:id', async (req, res) => {
 // Upload new content (authenticated users)
 router.post('/', auth, upload.single('media'), async (req, res) => {
   try {
+    // 요청 데이터 로깅
+    console.log('Upload request body:', req.body);
+    console.log('Upload request file:', req.file);
+    
     const { error } = contentSchema.validate(req.body);
     if (error) {
+      console.error('Validation error:', error.details[0].message);
       return res.status(400).json({ error: error.details[0].message });
     }
 
