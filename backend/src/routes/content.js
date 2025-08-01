@@ -114,8 +114,8 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     console.log('Upload request body:', req.body);
     console.log('Upload request file:', req.file);
     
-    // 수동 검증 (Joi 스키마 우회)
-    const { title, description, category, difficulty, isAI } = req.body;
+    // 수동 검증 (Joi 스키마 우회) - 중복 제거
+    const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
     
     if (!title || title.length < 5 || title.length > 50) {
       return res.status(400).json({ error: 'Title must be between 5 and 50 characters' });
@@ -132,26 +132,38 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'Media file is required' });
     }
-
-    const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
     
     // Determine media type
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
     
-    // 태그 처리: 모든 형태의 입력을 안전하게 처리
+    // 태그 처리: 모든 형태의 입력을 안전하게 처리 (완전 개선)
     let tagsArray = [];
     console.log('Original tags:', tags, 'Type:', typeof tags);
     
     try {
       if (tags) {
         if (typeof tags === 'string') {
-          // 쉼표로 구분된 문자열 처리 (주요 방식)
-          tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+          // JSON 배열 문자열 처리
+          if (tags.startsWith('[') && tags.endsWith(']')) {
+            try {
+              const parsedTags = JSON.parse(tags);
+              if (Array.isArray(parsedTags)) {
+                tagsArray = parsedTags.filter(tag => typeof tag === 'string' && tag.trim().length > 0);
+              }
+            } catch (e) {
+              console.log('JSON parse failed, treating as comma-separated string');
+              tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+            }
+          } else {
+            // 쉼표로 구분된 문자열 처리
+            tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+          }
         } else if (Array.isArray(tags)) {
-          // 배열인 경우 그대로 사용
-          tagsArray = tags.filter(tag => tag && tag.trim().length > 0);
+          // 배열인 경우 유효한 문자열만 필터링
+          tagsArray = tags.filter(tag => typeof tag === 'string' && tag.trim().length > 0);
         } else {
           // 기타 타입인 경우 빈 배열로 처리
+          console.log('Unknown tags type, using empty array');
           tagsArray = [];
         }
       }
@@ -190,10 +202,14 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Upload content error:', error);
-    console.error('Request body:', req.body);
-    console.error('Request file:', req.file);
-    res.status(500).json({ error: `Failed to upload content: ${error.message}` });
+    console.error('Upload content error:', error.message);
+    console.error('Request body:', JSON.stringify(req.body, null, 2));
+    console.error('Request file:', req.file ? {
+      filename: req.file.filename,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    } : 'No file');
+    res.status(500).json({ error: `Upload failed: ${error.message}` });
   }
 });
 
