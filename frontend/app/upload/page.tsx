@@ -96,7 +96,7 @@ export default function UploadPage() {
       uploadFormData.append('media', selectedFile);
 
       await uploadContent(uploadFormData);
-      alert('콘텐츠가 성공적으로 업로드되었습니다! 관리자 승인 후 공개됩니다.');
+      alert('콘텐츠가 성공적으로 업로드되었습니다!');
       window.location.href = '/';
     } catch (error: any) {
       console.error('Upload error:', error);

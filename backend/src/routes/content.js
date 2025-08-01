@@ -112,6 +112,19 @@ router.get('/', async (req, res) => {
 
     const total = await Content.countDocuments(filter);
 
+    // 디버그: 콘텐츠 정보 로깅
+    console.log('=== CONTENTS DEBUG ===');
+    contents.forEach((content, index) => {
+      console.log(`Content ${index + 1}:`, {
+        id: content._id,
+        title: content.title,
+        mediaUrl: content.mediaUrl,
+        mediaType: content.mediaType,
+        status: content.status
+      });
+    });
+    console.log('=== END DEBUG ===');
+
     res.json({
       contents,
       totalPages: Math.ceil(total / limit),
