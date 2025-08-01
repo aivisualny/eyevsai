@@ -8,7 +8,8 @@
     "start": "node src/index.js",
     "build": "echo 'No build step required'",
     "test": "jest",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "clear-db": "node src/utils/clearDb.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

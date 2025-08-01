@@ -47,9 +47,9 @@ const contentSchema = Joi.object({
   title: Joi.string().min(5).max(50).required(),
   description: Joi.string().min(10).max(300).required(),
   category: Joi.string().valid('art', 'photography', 'video', 'text', 'other'),
-  tags: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()),
+  tags: Joi.any(), // 모든 타입 허용
   difficulty: Joi.string().valid('easy', 'medium', 'hard'),
-  isAI: Joi.boolean().required()
+  isAI: Joi.string().valid('true', 'false').required() // 문자열로 받음
 });
 
 // Get all approved content (public)
@@ -129,13 +129,32 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     // Determine media type
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
     
-    // 태그 처리: 쉼표로 구분된 문자열을 배열로 변환
+    // 태그 처리: 다양한 형태의 입력을 배열로 변환
     let tagsArray = [];
-    if (tags && typeof tags === 'string' && tags.trim()) {
-      tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-    } else if (Array.isArray(tags)) {
-      tagsArray = tags.filter(tag => tag && tag.trim().length > 0);
+    console.log('Original tags:', tags, 'Type:', typeof tags);
+    
+    if (tags) {
+      if (typeof tags === 'string') {
+        try {
+          // JSON 문자열인지 확인
+          const parsedTags = JSON.parse(tags);
+          if (Array.isArray(parsedTags)) {
+            tagsArray = parsedTags.filter(tag => tag && tag.trim().length > 0);
+          } else {
+            // 일반 문자열인 경우 쉼표로 구분
+            tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+          }
+        } catch (e) {
+          // JSON 파싱 실패 시 쉼표로 구분
+          tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        }
+      } else if (Array.isArray(tags)) {
+        // 배열인 경우 그대로 사용
+        tagsArray = tags.filter(tag => tag && tag.trim().length > 0);
+      }
     }
+    
+    console.log('Processed tags array:', tagsArray);
     
     const content = new Content({
       title,
