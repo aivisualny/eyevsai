@@ -78,19 +78,15 @@ const processTags = (tags) => {
   }
 };
 
-// Validation schemas - tags 필드 엄격화
+// Validation schemas - tags 필드 수정
 const contentSchema = Joi.object({
   title: Joi.string().min(5).max(50).required(),
   description: Joi.string().min(10).max(300).required(),
   category: Joi.string().valid('art', 'photography', 'video', 'text', 'other'),
   difficulty: Joi.string().valid('easy', 'medium', 'hard'),
   isAI: Joi.string().valid('true', 'false').required(),
-  // tags 필드를 더 엄격하게 정의
-  tags: Joi.alternatives().try(
-    Joi.array().items(Joi.string().trim().min(1).max(20)).max(10),
-    Joi.string().allow('').max(200), // 쉼표로 구분된 문자열
-    Joi.allow(null, undefined)
-  ).optional()
+  // tags 필드 수정 - 더 유연하게 처리
+  tags: Joi.any().optional()
 }).unknown(true);
 
 // Get all approved content (public)
