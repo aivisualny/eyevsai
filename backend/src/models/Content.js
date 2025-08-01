@@ -57,10 +57,16 @@ const contentSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-  tags: [{
-    type: String,
-    trim: true
-  }],
+  tags: {
+    type: [String],
+    validate: {
+      validator: function(tags) {
+        return tags.length <= 10 && tags.every(tag => tag.length <= 20);
+      },
+      message: 'Tags must be at most 10 items and each tag must be at most 20 characters'
+    },
+    default: []
+  },
   difficulty: {
     type: String,
     enum: ['easy', 'medium', 'hard'],

@@ -42,15 +42,56 @@ const upload = multer({
   }
 });
 
-// Validation schemas - tags 필드 허용 + unknown 필드 허용
+// 태그 처리를 별도 함수로 분리
+const processTags = (tags) => {
+  if (!tags) return [];
+  
+  try {
+    // 문자열인 경우
+    if (typeof tags === 'string') {
+      // JSON 배열 문자열인지 확인
+      if (tags.trim().startsWith('[') && tags.trim().endsWith(']')) {
+        const parsed = JSON.parse(tags);
+        return Array.isArray(parsed) 
+          ? parsed.filter(tag => typeof tag === 'string' && tag.trim()).map(tag => tag.trim())
+          : [];
+      }
+      // 쉼표로 구분된 문자열
+      return tags.split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0)
+        .slice(0, 10); // 최대 10개로 제한
+    }
+    
+    // 배열인 경우
+    if (Array.isArray(tags)) {
+      return tags
+        .filter(tag => typeof tag === 'string' && tag.trim())
+        .map(tag => tag.trim())
+        .slice(0, 10);
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Tag processing error:', error);
+    return [];
+  }
+};
+
+// Validation schemas - tags 필드 엄격화
 const contentSchema = Joi.object({
   title: Joi.string().min(5).max(50).required(),
   description: Joi.string().min(10).max(300).required(),
   category: Joi.string().valid('art', 'photography', 'video', 'text', 'other'),
   difficulty: Joi.string().valid('easy', 'medium', 'hard'),
-  isAI: Joi.string().valid('true', 'false').required(), // 문자열로 받음
-  tags: Joi.any() // 어떤 형태든 허용 (문자열, 배열, 객체 등)
-}).unknown(true); // 알 수 없는 필드도 허용
+  isAI: Joi.string().valid('true', 'false').required(),
+  // tags 필드를 더 엄격하게 정의
+  tags: Joi.alternatives().try(
+    Joi.array().items(Joi.string().trim().min(1).max(20)).max(10),
+    Joi.string().allow('').max(200), // 쉼표로 구분된 문자열
+    Joi.allow(null, undefined)
+  ).optional()
+}).unknown(true);
 
 // Get all approved content (public)
 router.get('/', async (req, res) => {
@@ -121,11 +162,15 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     console.log('Tags field:', req.body.tags, 'Type:', typeof req.body.tags);
     console.log('=== END DEBUG ===');
     
-    // Joi 검증으로 통합 (tags 필드 허용)
+    // Joi 검증으로 통합 (개선된 에러 응답)
     const { error } = contentSchema.validate(req.body);
     if (error) {
       console.error('Validation error:', error.details[0].message);
-      return res.status(400).json({ error: error.details[0].message });
+      return res.status(400).json({ 
+        error: error.details[0].message,
+        field: error.details[0].path?.join('.'),
+        value: error.details[0].context?.value
+      });
     }
 
     const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
@@ -137,42 +182,8 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     // Determine media type
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
     
-    // 태그 처리: 모든 형태의 입력을 안전하게 처리 (완전 개선)
-    let tagsArray = [];
-    console.log('Original tags:', tags, 'Type:', typeof tags);
-    
-    try {
-      if (tags) {
-        if (typeof tags === 'string') {
-          // JSON 배열 문자열 처리
-          if (tags.startsWith('[') && tags.endsWith(']')) {
-            try {
-              const parsedTags = JSON.parse(tags);
-              if (Array.isArray(parsedTags)) {
-                tagsArray = parsedTags.filter(tag => typeof tag === 'string' && tag.trim().length > 0);
-              }
-            } catch (e) {
-              console.log('JSON parse failed, treating as comma-separated string');
-              tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-            }
-          } else {
-            // 쉼표로 구분된 문자열 처리
-            tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-          }
-        } else if (Array.isArray(tags)) {
-          // 배열인 경우 유효한 문자열만 필터링
-          tagsArray = tags.filter(tag => typeof tag === 'string' && tag.trim().length > 0);
-        } else {
-          // 기타 타입인 경우 빈 배열로 처리
-          console.log('Unknown tags type, using empty array');
-          tagsArray = [];
-        }
-      }
-    } catch (error) {
-      console.error('Tag processing error:', error);
-      tagsArray = []; // 오류 발생 시 빈 배열로 처리
-    }
-    
+    // 태그 처리: 단순화된 로직
+    const tagsArray = processTags(tags);
     console.log('Processed tags array:', tagsArray);
     
     const content = new Content({
