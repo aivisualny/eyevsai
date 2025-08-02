@@ -102,9 +102,11 @@ export default function UploadPage() {
       console.log('File size:', selectedFile.size);
       console.log('File type:', selectedFile.type);
       console.log('FormData entries:');
-      for (let [key, value] of uploadFormData.entries()) {
+      // ES5 호환 방식으로 FormData 내용 출력
+      const entries = Array.from(uploadFormData.entries());
+      entries.forEach(([key, value]) => {
         console.log(`${key}:`, value);
-      }
+      });
       console.log('=== END FRONTEND DEBUG ===');
 
       await uploadContent(uploadFormData);
