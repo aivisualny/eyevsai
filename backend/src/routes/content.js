@@ -14,14 +14,24 @@ const router = express.Router();
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../../uploads');
+    console.log('=== UPLOAD DIRECTORY DEBUG ===');
+    console.log('Upload directory path:', uploadDir);
+    console.log('Directory exists:', fs.existsSync(uploadDir));
+    console.log('Directory permissions:', fs.statSync(uploadDir).mode);
+    
     if (!fs.existsSync(uploadDir)) {
+      console.log('Creating upload directory...');
       fs.mkdirSync(uploadDir, { recursive: true });
+      console.log('Upload directory created successfully');
     }
+    console.log('=== END DIRECTORY DEBUG ===');
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    const filename = file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname);
+    console.log('Generated filename:', filename);
+    cb(null, filename);
   }
 });
 
@@ -168,10 +178,14 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
       filename: req.file.filename,
       mimetype: req.file.mimetype,
       size: req.file.size,
-      path: req.file.path
+      path: req.file.path,
+      fieldname: req.file.fieldname,
+      originalname: req.file.originalname
     } : 'No file');
     console.log('Tags field:', req.body.tags, 'Type:', typeof req.body.tags);
     console.log('Upload directory exists:', fs.existsSync(path.join(__dirname, '../../uploads')));
+    console.log('File saved path:', req.file ? req.file.path : 'No file');
+    console.log('File accessible:', req.file ? fs.existsSync(req.file.path) : 'No file');
     console.log('=== END DEBUG ===');
     
     // Joi 검증으로 통합 (개선된 에러 응답)

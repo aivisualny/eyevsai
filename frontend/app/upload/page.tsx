@@ -95,6 +95,18 @@ export default function UploadPage() {
       uploadFormData.append('isRequestedReview', formData.isRequestedReview);
       uploadFormData.append('media', selectedFile);
 
+      // 디버그: FormData 내용 확인
+      console.log('=== FRONTEND UPLOAD DEBUG ===');
+      console.log('Selected file:', selectedFile);
+      console.log('File name:', selectedFile.name);
+      console.log('File size:', selectedFile.size);
+      console.log('File type:', selectedFile.type);
+      console.log('FormData entries:');
+      for (let [key, value] of uploadFormData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      console.log('=== END FRONTEND DEBUG ===');
+
       await uploadContent(uploadFormData);
       alert('콘텐츠가 성공적으로 업로드되었습니다!');
       window.location.href = '/';
