@@ -98,8 +98,8 @@ const contentSchema = new mongoose.Schema({
   },
   predictedDifficulty: {
     type: String,
-    enum: ['easy', 'normal', 'hard'],
-    default: 'normal'
+    enum: ['easy', 'medium', 'hard'],
+    default: 'medium'
   },
   predictedAccuracy: {
     type: Number,
@@ -119,7 +119,8 @@ const contentSchema = new mongoose.Schema({
     default: null
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  strict: false // 디버깅을 위해 임시로 false로 설정
 });
 
 // Index for better query performance

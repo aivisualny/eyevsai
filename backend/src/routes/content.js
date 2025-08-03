@@ -7,6 +7,7 @@ const Content = require('../models/Content');
 const { auth, adminAuth } = require('../middleware/auth');
 const Comment = require('../models/Comment');
 const Report = require('../models/Report');
+const mongoose = require('mongoose'); // Added for ObjectId conversion
 
 const router = express.Router();
 
@@ -39,53 +40,99 @@ const upload = multer({
   storage: storage,
   limits: {
     fileSize: 10 * 1024 * 1024 // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|mp4|avi|mov|webm/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only image and video files are allowed!'));
-    }
   }
+  // 파일 필터 제거 - 모든 파일 허용
 });
 
-// 태그 처리를 별도 함수로 분리
+// 태그 처리를 별도 함수로 분리 (개선된 버전)
 const processTags = (tags) => {
-  if (!tags) return [];
+  console.log('=== PROCESS TAGS START ===');
+  console.log('Input tags:', tags);
+  console.log('Input tags type:', typeof tags);
+  
+  if (!tags) {
+    console.log('No tags provided, returning empty array');
+    return [];
+  }
   
   try {
     // 문자열인 경우
     if (typeof tags === 'string') {
+      console.log('Processing string tags');
+      
       // JSON 배열 문자열인지 확인
       if (tags.trim().startsWith('[') && tags.trim().endsWith(']')) {
+        console.log('Detected JSON array string');
         const parsed = JSON.parse(tags);
-        return Array.isArray(parsed) 
-          ? parsed.filter(tag => typeof tag === 'string' && tag.trim()).map(tag => tag.trim())
-          : [];
+        console.log('Parsed JSON:', parsed);
+        
+        if (Array.isArray(parsed)) {
+          // 객체 배열인지 확인 (예: [{"label": "태그1"}, {"label": "태그2"}])
+          if (parsed.length > 0 && typeof parsed[0] === 'object' && parsed[0].label) {
+            console.log('Processing object array with label property');
+            const result = parsed
+              .map(tag => tag.label?.trim())
+              .filter(tag => tag && tag.length > 0)
+              .slice(0, 10);
+            console.log('Processed object array result:', result);
+            return result;
+          }
+          // 문자열 배열인 경우
+          console.log('Processing string array');
+          const result = parsed
+            .filter(tag => typeof tag === 'string' && tag.trim())
+            .map(tag => tag.trim())
+            .slice(0, 10);
+          console.log('Processed string array result:', result);
+          return result;
+        }
+        console.log('Parsed JSON is not an array, returning empty');
+        return [];
       }
+      
       // 쉼표로 구분된 문자열
-      return tags.split(',')
+      console.log('Processing comma-separated string');
+      const result = tags.split(',')
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
         .slice(0, 10); // 최대 10개로 제한
+      console.log('Processed comma-separated result:', result);
+      return result;
     }
     
     // 배열인 경우
     if (Array.isArray(tags)) {
-      return tags
+      console.log('Processing array tags');
+      
+      // 객체 배열인지 확인
+      if (tags.length > 0 && typeof tags[0] === 'object' && tags[0].label) {
+        console.log('Processing object array');
+        const result = tags
+          .map(tag => tag.label?.trim())
+          .filter(tag => tag && tag.length > 0)
+          .slice(0, 10);
+        console.log('Processed object array result:', result);
+        return result;
+      }
+      
+      // 문자열 배열인 경우
+      console.log('Processing string array');
+      const result = tags
         .filter(tag => typeof tag === 'string' && tag.trim())
         .map(tag => tag.trim())
         .slice(0, 10);
+      console.log('Processed string array result:', result);
+      return result;
     }
     
+    console.log('Unknown tags format, returning empty array');
     return [];
   } catch (error) {
     console.error('Tag processing error:', error);
+    console.error('Error stack:', error.stack);
     return [];
+  } finally {
+    console.log('=== PROCESS TAGS END ===');
   }
 };
 
@@ -168,27 +215,41 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Upload new content (authenticated users)
+// Upload new content (authenticated users) - 개선된 디버깅 버전
 router.post('/', auth, upload.single('media'), async (req, res) => {
+  console.log('=== UPLOAD ROUTE START ===');
+  
   try {
-    // 요청 데이터 상세 로깅
-    console.log('=== UPLOAD REQUEST DEBUG ===');
-    console.log('Upload request body:', JSON.stringify(req.body, null, 2));
-    console.log('Upload request file:', req.file ? {
+    // 1. 인증 확인
+    console.log('User authenticated:', req.user ? req.user._id : 'No user');
+    console.log('User object:', JSON.stringify(req.user, null, 2));
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // 2. 파일 확인
+    console.log('File received:', req.file ? 'Yes' : 'No');
+    if (!req.file) {
+      return res.status(400).json({ error: 'Media file is required' });
+    }
+
+    // 3. 요청 데이터 상세 로깅
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('File info:', {
       filename: req.file.filename,
       mimetype: req.file.mimetype,
       size: req.file.size,
       path: req.file.path,
       fieldname: req.file.fieldname,
       originalname: req.file.originalname
-    } : 'No file');
+    });
     console.log('Tags field:', req.body.tags, 'Type:', typeof req.body.tags);
+    console.log('isAI field:', req.body.isAI, 'Type:', typeof req.body.isAI);
     console.log('Upload directory exists:', fs.existsSync(path.join(__dirname, '../../uploads')));
-    console.log('File saved path:', req.file ? req.file.path : 'No file');
-    console.log('File accessible:', req.file ? fs.existsSync(req.file.path) : 'No file');
-    console.log('=== END DEBUG ===');
-    
-    // Joi 검증으로 통합 (개선된 에러 응답)
+    console.log('File saved path:', req.file.path);
+    console.log('File accessible:', fs.existsSync(req.file.path));
+
+    // 4. Joi 검증
     const { error } = contentSchema.validate(req.body);
     if (error) {
       console.error('Validation error:', error.details[0].message);
@@ -199,36 +260,85 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
       });
     }
 
+    // 5. 데이터 추출 및 안전한 처리
     const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
+    console.log('Extracted data:', { title, description, category, difficulty, isAI });
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'Media file is required' });
-    }
-    
-    // Determine media type
+    // 6. 미디어 타입 결정
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
-    
-    // 태그 처리: 단순화된 로직
+    console.log('Media type:', mediaType);
+
+    // 7. 태그 처리 (개선된 로직)
     const tagsArray = processTags(tags);
     console.log('Processed tags array:', tagsArray);
-    
-    const content = new Content({
-      title,
-      description,
+    console.log('Tags validation check:', {
+      length: tagsArray.length,
+      maxLength: Math.max(...tagsArray.map(tag => tag.length), 0),
+      isValid: tagsArray.length <= 10 && tagsArray.every(tag => tag.length <= 20)
+    });
+
+    // 8. isAI 안전한 처리
+    const isAIBoolean = String(isAI) === 'true';
+    console.log('isAI processing:', { original: isAI, processed: isAIBoolean });
+
+    // 9. uploadedBy 안전한 처리
+    let uploadedBy;
+    try {
+      // req.user._id가 문자열인지 ObjectId인지 확인
+      if (typeof req.user._id === 'string') {
+        uploadedBy = mongoose.Types.ObjectId(req.user._id);
+        console.log('Converted string _id to ObjectId');
+      } else {
+        uploadedBy = req.user._id;
+        console.log('Using existing ObjectId');
+      }
+      console.log('uploadedBy type:', typeof uploadedBy);
+      console.log('uploadedBy value:', uploadedBy);
+    } catch (error) {
+      console.error('ObjectId conversion error:', error);
+      return res.status(400).json({ error: 'Invalid user ID format' });
+    }
+
+    // 10. Content 객체 생성
+    console.log('Creating content object...');
+    const contentData = {
+      title: title.trim(),
+      description: description.trim(),
       mediaUrl: `/uploads/${req.file.filename}`,
       mediaType,
       category: category || 'other',
       tags: tagsArray,
       difficulty: difficulty || 'medium',
-      isAI: isAI === 'true',
-      isRequestedReview: isRequestedReview === 'true',
-      uploadedBy: req.user._id,
-      status: 'approved' // 바로 승인 상태로 변경
-    });
+      isAI: isAIBoolean,
+      isRequestedReview: String(isRequestedReview) === 'true',
+      uploadedBy: uploadedBy,
+      status: 'approved'
+    };
+    
+    console.log('Content data to save:', JSON.stringify(contentData, null, 2));
 
+    // 11. 데이터베이스 저장 전 검증
+    console.log('Saving to database...');
+    const content = new Content(contentData);
+    
+    // 저장 전 검증
+    const validationError = content.validateSync();
+    if (validationError) {
+      console.error('Mongoose validation error:', validationError);
+      console.error('Validation error details:', JSON.stringify(validationError.errors, null, 2));
+      return res.status(400).json({ 
+        error: 'Validation failed', 
+        details: validationError.errors 
+      });
+    }
+
+    // 12. 실제 저장 시도
+    console.log('Attempting to save content...');
     await content.save();
+    console.log('Content saved successfully with ID:', content._id);
 
-    res.status(201).json({
+    // 13. 응답 전송
+    const response = {
       message: 'Content uploaded successfully',
       content: {
         id: content._id,
@@ -239,16 +349,57 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
         category: content.category,
         status: content.status
       }
-    });
+    };
+
+    console.log('Sending response:', JSON.stringify(response, null, 2));
+    res.status(201).json(response);
+
   } catch (error) {
-    console.error('Upload content error:', error.message);
+    console.error('=== UPLOAD ERROR ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
+    
+    // MongoDB 관련 에러 체크
+    if (error.name === 'ValidationError') {
+      console.error('Mongoose validation error details:', error.errors);
+      return res.status(400).json({ 
+        error: 'Validation failed', 
+        details: Object.keys(error.errors).map(key => ({
+          field: key,
+          message: error.errors[key].message
+        }))
+      });
+    }
+    
+    if (error.name === 'MongoError' || error.name === 'MongooseError') {
+      console.error('Database error:', error);
+      return res.status(500).json({ error: 'Database connection error' });
+    }
+
+    // ObjectId 관련 에러 체크
+    if (error.name === 'CastError') {
+      console.error('Cast error:', error);
+      return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    // 파일 시스템 에러 체크
+    if (error.code === 'ENOENT' || error.code === 'EACCES') {
+      console.error('File system error:', error);
+      return res.status(500).json({ error: 'File system error' });
+    }
+
     console.error('Request body:', JSON.stringify(req.body, null, 2));
     console.error('Request file:', req.file ? {
       filename: req.file.filename,
       mimetype: req.file.mimetype,
       size: req.file.size
     } : 'No file');
+    
     res.status(500).json({ error: `Upload failed: ${error.message}` });
+  } finally {
+    console.log('=== UPLOAD ROUTE END ===');
   }
 });
 

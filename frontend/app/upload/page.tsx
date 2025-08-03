@@ -89,8 +89,19 @@ export default function UploadPage() {
       uploadFormData.append('description', formData.description);
       uploadFormData.append('category', formData.category);
       uploadFormData.append('difficulty', formData.difficulty);
-      // 태그를 JSON 문자열로 전송 (더 안전한 방식)
-      uploadFormData.append('tags', JSON.stringify(formData.tags));
+      
+      // 태그 처리 개선
+      if (formData.tags && formData.tags.length > 0) {
+        // 태그 배열을 JSON 문자열로 변환
+        const tagsJson = JSON.stringify(formData.tags);
+        console.log('Tags to send:', formData.tags);
+        console.log('Tags JSON:', tagsJson);
+        uploadFormData.append('tags', tagsJson);
+      } else {
+        // 빈 태그 배열 전송
+        uploadFormData.append('tags', JSON.stringify([]));
+      }
+      
       uploadFormData.append('isAI', formData.isAI);
       uploadFormData.append('isRequestedReview', formData.isRequestedReview);
       uploadFormData.append('media', selectedFile);
@@ -101,6 +112,7 @@ export default function UploadPage() {
       console.log('File name:', selectedFile.name);
       console.log('File size:', selectedFile.size);
       console.log('File type:', selectedFile.type);
+      console.log('Form data:', formData);
       console.log('FormData entries:');
       // ES5 호환 방식으로 FormData 내용 출력
       const entries = Array.from(uploadFormData.entries());
@@ -114,6 +126,8 @@ export default function UploadPage() {
       window.location.href = '/';
     } catch (error: any) {
       console.error('Upload error:', error);
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
       const errorMessage = error.response?.data?.error || error.message || '업로드에 실패했습니다.';
       setError(`업로드 실패: ${errorMessage}`);
     } finally {
