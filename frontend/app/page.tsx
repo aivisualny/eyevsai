@@ -192,7 +192,7 @@ export default function HomePage() {
                   contents.slice(0, 3).map((c: any) => (
                     <div key={c._id} className="flex items-center gap-4 p-3 border rounded-lg mb-3 hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/vote/${c._id}`}>
                       <div className="relative">
-                        <img src={c.mediaUrl.startsWith('http') ? c.mediaUrl : `http://localhost:5000${c.mediaUrl}`} alt={c.title} className="w-16 h-16 object-cover rounded" />
+                        <img src={c.mediaUrl.startsWith('data:') ? c.mediaUrl : c.mediaUrl.startsWith('http') ? c.mediaUrl : `https://eyevsai.onrender.com${c.mediaUrl}`} alt={c.title} className="w-16 h-16 object-cover rounded" />
                         {c.isRecycled && (
                           <span className="absolute top-1 left-1 bg-pink-100 text-pink-600 text-xs px-2 py-0.5 rounded font-semibold shadow">🔁 재투표</span>
                         )}
@@ -273,7 +273,7 @@ export default function HomePage() {
                     {filteredContents(tab, contents).map((c: any) => (
                       <div key={c._id} className="rounded-xl border shadow-lg p-4 bg-white hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer">
                         <div className="relative mb-3 group">
-                          <img src={c.mediaUrl.startsWith('http') ? c.mediaUrl : `http://localhost:5000${c.mediaUrl}`} alt={c.title} className="rounded-lg w-full h-48 object-cover group-hover:scale-105 group-hover:shadow-xl transition-transform duration-200" />
+                          <img src={c.mediaUrl.startsWith('data:') ? c.mediaUrl : c.mediaUrl.startsWith('http') ? c.mediaUrl : `https://eyevsai.onrender.com${c.mediaUrl}`} alt={c.title} className="rounded-lg w-full h-48 object-cover group-hover:scale-105 group-hover:shadow-xl transition-transform duration-200" />
                           {c.status === 'closed' && <span className="absolute top-2 right-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">마감됨</span>}
                           {c.isAnswerRevealed && <span className="absolute top-2 left-2 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded">정답 공개됨</span>}
                           {c.isRecycled && (

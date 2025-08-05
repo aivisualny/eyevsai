@@ -152,13 +152,13 @@ export default function VotePage() {
           <div className="aspect-video bg-gray-200">
             {content.mediaType === 'image' ? (
               <img
-                src={`http://localhost:5000${content.mediaUrl}`}
+                src={content.mediaUrl.startsWith('data:') ? content.mediaUrl : `https://eyevsai.onrender.com${content.mediaUrl}`}
                 alt={content.title}
                 className="w-full h-full object-contain"
               />
             ) : (
               <video
-                src={`http://localhost:5000${content.mediaUrl}`}
+                src={content.mediaUrl.startsWith('data:') ? content.mediaUrl : `https://eyevsai.onrender.com${content.mediaUrl}`}
                 className="w-full h-full object-contain"
                 controls
               />
