@@ -14,16 +14,37 @@ const router = express.Router();
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads');
+    // 배포 환경에서는 임시 디렉토리 사용
+    const uploadDir = process.env.NODE_ENV === 'production' 
+      ? '/tmp/uploads' 
+      : path.join(__dirname, '../../uploads');
+    
     console.log('=== UPLOAD DIRECTORY DEBUG ===');
+    console.log('Environment:', process.env.NODE_ENV);
     console.log('Upload directory path:', uploadDir);
     console.log('Directory exists:', fs.existsSync(uploadDir));
-    console.log('Directory permissions:', fs.statSync(uploadDir).mode);
+    
+    if (fs.existsSync(uploadDir)) {
+      try {
+        console.log('Directory permissions:', fs.statSync(uploadDir).mode);
+      } catch (error) {
+        console.log('Cannot read directory permissions:', error.message);
+      }
+    }
     
     if (!fs.existsSync(uploadDir)) {
       console.log('Creating upload directory...');
-      fs.mkdirSync(uploadDir, { recursive: true });
-      console.log('Upload directory created successfully');
+      try {
+        fs.mkdirSync(uploadDir, { recursive: true });
+        console.log('Upload directory created successfully');
+      } catch (error) {
+        console.error('Failed to create upload directory:', error.message);
+        // 임시 디렉토리로 폴백
+        const tempDir = '/tmp';
+        console.log('Falling back to temp directory:', tempDir);
+        cb(null, tempDir);
+        return;
+      }
     }
     console.log('=== END DIRECTORY DEBUG ===');
     cb(null, uploadDir);
@@ -245,7 +266,7 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     });
     console.log('Tags field:', req.body.tags, 'Type:', typeof req.body.tags);
     console.log('isAI field:', req.body.isAI, 'Type:', typeof req.body.isAI);
-    console.log('Upload directory exists:', fs.existsSync(path.join(__dirname, '../../uploads')));
+    console.log('Upload directory exists:', fs.existsSync(req.file.path ? path.dirname(req.file.path) : '/tmp'));
     console.log('File saved path:', req.file.path);
     console.log('File accessible:', fs.existsSync(req.file.path));
 
