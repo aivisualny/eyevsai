@@ -194,6 +194,15 @@ router.get('/', async (req, res) => {
       .skip((page - 1) * limit)
       .select('-isAI'); // Hide the answer
 
+    // 배포 환경에서는 Base64 데이터 포함
+    if (process.env.NODE_ENV === 'production') {
+      contents.forEach(content => {
+        if (content.mediaData) {
+          content.mediaUrl = content.mediaData; // Base64 데이터를 mediaUrl로 사용
+        }
+      });
+    }
+
     const total = await Content.countDocuments(filter);
 
     // 디버그: 콘텐츠 정보 로깅
@@ -230,6 +239,11 @@ router.get('/:id', async (req, res) => {
 
     if (!content || content.status !== 'approved' || !content.isActive) {
       return res.status(404).json({ error: 'Content not found' });
+    }
+
+    // 배포 환경에서는 Base64 데이터 포함
+    if (process.env.NODE_ENV === 'production' && content.mediaData) {
+      content.mediaUrl = content.mediaData; // Base64 데이터를 mediaUrl로 사용
     }
 
     // Increment views
@@ -339,10 +353,23 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     console.log('File permissions:', fs.statSync(req.file.path).mode);
     console.log('=== END FILE PATH DEBUG ===');
     
+    // Base64 인코딩 (배포 환경용)
+    let mediaData = null;
+    if (process.env.NODE_ENV === 'production' && req.file.mimetype.startsWith('image/')) {
+      try {
+        const fileBuffer = fs.readFileSync(req.file.path);
+        mediaData = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
+        console.log('Base64 encoding successful, size:', mediaData.length);
+      } catch (error) {
+        console.error('Base64 encoding failed:', error.message);
+      }
+    }
+    
     const contentData = {
       title: title.trim(),
       description: description.trim(),
       mediaUrl: `/uploads/${req.file.filename}`,
+      mediaData: mediaData, // Base64 데이터 추가
       mediaType,
       category: category || 'other',
       tags: tagsArray,

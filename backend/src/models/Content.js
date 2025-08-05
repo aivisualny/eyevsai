@@ -17,6 +17,10 @@ const contentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  mediaData: {
+    type: String, // Base64 encoded image data
+    required: false
+  },
   mediaType: {
     type: String,
     enum: ['image', 'video'],
