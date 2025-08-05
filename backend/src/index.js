@@ -20,7 +20,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+const uploadPath = path.join(__dirname, '../uploads');
+console.log('=== STATIC FILE SERVING DEBUG ===');
+console.log('Upload path:', uploadPath);
+console.log('Upload path exists:', require('fs').existsSync(uploadPath));
+console.log('Upload path absolute:', require('path').resolve(uploadPath));
+console.log('=== END STATIC FILE DEBUG ===');
+app.use('/uploads', express.static(uploadPath));
 
 // Routes
 app.use('/api/auth', authRoutes);

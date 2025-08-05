@@ -328,6 +328,17 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
 
     // 10. Content 객체 생성
     console.log('Creating content object...');
+    
+    // 파일 경로 상세 로깅
+    console.log('=== FILE PATH DEBUG ===');
+    console.log('File path:', req.file.path);
+    console.log('File filename:', req.file.filename);
+    console.log('File dirname:', path.dirname(req.file.path));
+    console.log('File exists:', fs.existsSync(req.file.path));
+    console.log('File size:', fs.statSync(req.file.path).size);
+    console.log('File permissions:', fs.statSync(req.file.path).mode);
+    console.log('=== END FILE PATH DEBUG ===');
+    
     const contentData = {
       title: title.trim(),
       description: description.trim(),
