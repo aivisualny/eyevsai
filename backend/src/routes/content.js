@@ -14,9 +14,9 @@ const router = express.Router();
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // 배포 환경에서는 임시 디렉토리 사용
+    // 배포 환경에서는 상대 경로 사용
     const uploadDir = process.env.NODE_ENV === 'production' 
-      ? '/tmp/uploads' 
+      ? path.join(__dirname, '../../uploads') 
       : path.join(__dirname, '../../uploads');
     
     console.log('=== UPLOAD DIRECTORY DEBUG ===');
@@ -39,10 +39,16 @@ const storage = multer.diskStorage({
         console.log('Upload directory created successfully');
       } catch (error) {
         console.error('Failed to create upload directory:', error.message);
-        // 임시 디렉토리로 폴백
-        const tempDir = '/tmp';
-        console.log('Falling back to temp directory:', tempDir);
-        cb(null, tempDir);
+        // 현재 디렉토리로 폴백
+        const currentDir = path.join(__dirname, '../../uploads');
+        console.log('Falling back to current directory:', currentDir);
+        try {
+          fs.mkdirSync(currentDir, { recursive: true });
+          cb(null, currentDir);
+        } catch (fallbackError) {
+          console.error('Fallback directory creation failed:', fallbackError.message);
+          cb(null, path.dirname(__dirname));
+        }
         return;
       }
     }
