@@ -36,8 +36,8 @@ router.post('/', auth, async (req, res) => {
       return res.status(404).json({ error: '투표할 수 없는 콘텐츠입니다.' });
     }
 
-    // 정답 여부 확인
-    const isCorrect = vote === content.type;
+    // 정답 여부 확인 (감별의뢰는 정답에 카운트하지 않음)
+    const isCorrect = content.isRequestedReview ? false : vote === (content.isAI ? 'ai' : 'real');
     const pointsEarned = isCorrect ? 10 : 1; // 정답: 10점, 오답: 1점
 
     // 투표 저장
@@ -55,7 +55,7 @@ router.post('/', auth, async (req, res) => {
       WrongVote.create({
         contentId,
         userId: req.user._id,
-        wasReal: content.type === 'real',
+        wasReal: !content.isAI,
       }).catch(() => {});
     }
 

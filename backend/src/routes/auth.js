@@ -22,7 +22,7 @@ const loginSchema = Joi.object({
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' }); // 7일에서 24시간으로 단축
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '2h' }); // 2시간으로 단축
 };
 
 // Register

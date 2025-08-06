@@ -236,4 +236,31 @@ export async function checkUsername(username: string) {
 export async function withdraw() {
   const res = await axios.delete(`${API_BASE}/auth/delete`, { headers: getAuthHeaders() });
   return res.data;
+}
+
+// 내 통계 초기화
+export async function resetMyStats() {
+  const res = await axios.post(`${API_BASE}/users/reset-stats`, {}, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+// 내 업로드한 콘텐츠 조회
+export async function getMyContent(params?: any) {
+  const res = await axios.get(`${API_BASE}/users/my-content`, {
+    headers: getAuthHeaders(),
+    params,
+  });
+  return res.data;
+}
+
+// 콘텐츠 수정
+export async function updateContent(id: string, data: any) {
+  const res = await axios.put(`${API_BASE}/content/${id}`, data, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+// 콘텐츠 삭제
+export async function deleteContent(id: string) {
+  const res = await axios.delete(`${API_BASE}/content/${id}`, { headers: getAuthHeaders() });
+  return res.data;
 } 

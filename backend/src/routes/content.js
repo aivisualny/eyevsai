@@ -927,4 +927,62 @@ router.patch('/admin/reports/:reportId', adminAuth, async (req, res) => {
   }
 });
 
+// 콘텐츠 수정 (업로더만)
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const content = await Content.findById(req.params.id);
+    if (!content) {
+      return res.status(404).json({ error: '콘텐츠를 찾을 수 없습니다.' });
+    }
+
+    // 업로더만 수정 가능
+    if (content.uploadedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: '수정 권한이 없습니다.' });
+    }
+
+    const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
+    
+    // 태그 처리
+    const tagsArray = processTags(tags);
+    
+    const updatedContent = await Content.findByIdAndUpdate(
+      req.params.id,
+      {
+        title: title.trim(),
+        description: description.trim(),
+        category: category || 'other',
+        tags: tagsArray,
+        difficulty: difficulty || 'medium',
+        isAI: String(isAI) === 'true',
+        isRequestedReview: String(isRequestedReview) === 'true'
+      },
+      { new: true }
+    );
+
+    res.json({ content: updatedContent });
+  } catch (err) {
+    res.status(500).json({ error: '콘텐츠 수정 실패' });
+  }
+});
+
+// 콘텐츠 삭제 (업로더 또는 관리자만)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const content = await Content.findById(req.params.id);
+    if (!content) {
+      return res.status(404).json({ error: '콘텐츠를 찾을 수 없습니다.' });
+    }
+
+    // 관리자 또는 업로더만 삭제 가능
+    if (req.user.role !== 'admin' && content.uploadedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: '삭제 권한이 없습니다.' });
+    }
+
+    await Content.findByIdAndDelete(req.params.id);
+    res.json({ message: '콘텐츠가 삭제되었습니다.' });
+  } catch (err) {
+    res.status(500).json({ error: '콘텐츠 삭제 실패' });
+  }
+});
+
 module.exports = router; 

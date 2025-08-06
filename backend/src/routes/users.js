@@ -64,4 +64,57 @@ router.get('/:id/following', async (req, res) => {
   }
 });
 
+// 내 통계 초기화
+router.post('/reset-stats', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    // 통계 초기화
+    user.totalVotes = 0;
+    user.correctVotes = 0;
+    user.points = 0;
+    user.consecutiveCorrect = 0;
+    user.maxConsecutiveCorrect = 0;
+    user.accuracyHistory = [];
+    
+    await user.save();
+    
+    // 투표 기록 삭제
+    const Vote = require('../models/Vote');
+    await Vote.deleteMany({ user: req.user._id });
+    
+    res.json({ message: '통계가 초기화되었습니다.' });
+  } catch (err) {
+    res.status(500).json({ error: '통계 초기화 중 오류 발생' });
+  }
+});
+
+// 내 업로드한 콘텐츠 조회
+router.get('/my-content', auth, async (req, res) => {
+  try {
+    const Content = require('../models/Content');
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+    
+    const contents = await Content.find({ uploadedBy: req.user._id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await Content.countDocuments({ uploadedBy: req.user._id });
+    
+    res.json({
+      contents,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: '내 콘텐츠 조회 실패' });
+  }
+});
+
 module.exports = router; 
