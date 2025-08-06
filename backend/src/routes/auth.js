@@ -140,6 +140,14 @@ router.get('/google', (req, res) => {
 
 router.get('/google/callback', async (req, res) => {
   try {
+    console.log('=== GOOGLE CALLBACK DEBUG ===');
+    console.log('Query params:', req.query);
+    console.log('BACKEND_URL:', process.env.BACKEND_URL);
+    console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
+    console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
+    console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
+    console.log('=== END DEBUG ===');
+    
     if (req.query.error === 'access_denied') {
       const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=user_cancelled`);
@@ -153,6 +161,8 @@ router.get('/google/callback', async (req, res) => {
 
     // Google OAuth 토큰 교환
     const backendUrl = process.env.BACKEND_URL || 'https://eyevsai.onrender.com';
+    console.log('Token exchange URL:', `${backendUrl}/api/auth/google/callback`);
+    
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
@@ -167,8 +177,11 @@ router.get('/google/callback', async (req, res) => {
       }),
     });
 
+    console.log('Token response status:', tokenResponse.status);
     if (!tokenResponse.ok) {
-      throw new Error('Google OAuth 토큰 교환 실패');
+      const errorText = await tokenResponse.text();
+      console.log('Token exchange error:', errorText);
+      throw new Error(`Google OAuth 토큰 교환 실패: ${tokenResponse.status} - ${errorText}`);
     }
 
     const tokenData = await tokenResponse.json();
