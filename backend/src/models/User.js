@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  isProfileComplete: {
+    type: Boolean,
+    default: false
+  },
   badges: [{
     badge: {
       type: mongoose.Schema.Types.ObjectId,
