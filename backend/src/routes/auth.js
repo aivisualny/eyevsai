@@ -215,13 +215,20 @@ router.get('/google/callback', async (req, res) => {
       // 사용자명이 중복되는 경우 숫자 추가
       let counter = 1;
       let originalUsername = username;
-      while (await User.findOne({ username })) {
-        username = `${originalUsername}${counter}`;
+      let finalUsername = username;
+      
+      // 중복되지 않는 사용자명을 찾을 때까지 반복
+      while (true) {
+        const existingUser = await User.findOne({ username: finalUsername });
+        if (!existingUser) {
+          break;
+        }
+        finalUsername = `${originalUsername}${counter}`;
         counter++;
       }
 
       user = new User({
-        username,
+        username: finalUsername,
         email,
         password: 'social_login_' + Math.random().toString(36).substr(2, 9),
         avatar,
@@ -332,13 +339,20 @@ router.get('/facebook/callback', async (req, res) => {
       // 사용자명이 중복되는 경우 숫자 추가
       let counter = 1;
       let originalUsername = username;
-      while (await User.findOne({ username })) {
-        username = `${originalUsername}${counter}`;
+      let finalUsername = username;
+      
+      // 중복되지 않는 사용자명을 찾을 때까지 반복
+      while (true) {
+        const existingUser = await User.findOne({ username: finalUsername });
+        if (!existingUser) {
+          break;
+        }
+        finalUsername = `${originalUsername}${counter}`;
         counter++;
       }
 
       user = new User({
-        username,
+        username: finalUsername,
         email,
         password: 'social_login_' + Math.random().toString(36).substr(2, 9),
         avatar,
@@ -453,13 +467,20 @@ router.get('/kakao/callback', async (req, res) => {
       // 사용자명이 중복되는 경우 숫자 추가
       let counter = 1;
       let originalUsername = username;
-      while (await User.findOne({ username })) {
-        username = `${originalUsername}${counter}`;
+      let finalUsername = username;
+      
+      // 중복되지 않는 사용자명을 찾을 때까지 반복
+      while (true) {
+        const existingUser = await User.findOne({ username: finalUsername });
+        if (!existingUser) {
+          break;
+        }
+        finalUsername = `${originalUsername}${counter}`;
         counter++;
       }
 
       user = new User({
-        username,
+        username: finalUsername,
         email,
         password: 'social_login_' + Math.random().toString(36).substr(2, 9),
         avatar,
