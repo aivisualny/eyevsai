@@ -206,11 +206,20 @@ router.get('/google/callback', async (req, res) => {
     }
 
     let user = await User.findOne({ email: profile.email });
-    const username = profile.name || `user_${Date.now()}`;
+    let username = profile.name || `user_${Date.now()}`;
     const email = profile.email;
     const avatar = profile.picture || null;
 
+    // 사용자명 중복 처리
     if (!user) {
+      // 사용자명이 중복되는 경우 숫자 추가
+      let counter = 1;
+      let originalUsername = username;
+      while (await User.findOne({ username })) {
+        username = `${originalUsername}${counter}`;
+        counter++;
+      }
+
       user = new User({
         username,
         email,
@@ -221,10 +230,9 @@ router.get('/google/callback', async (req, res) => {
       });
       await user.save();
     } else {
-      // 소셜 정보 및 프로필 동기화
+      // 기존 사용자의 경우 사용자명은 변경하지 않음 (중복 방지)
       user.socialProvider = 'google';
       user.socialId = profile.id;
-      user.username = username;
       if (avatar) user.avatar = avatar;
       await user.save();
     }
@@ -315,11 +323,20 @@ router.get('/facebook/callback', async (req, res) => {
     }
 
     let user = await User.findOne({ email: profile.email });
-    const username = profile.name || `user_${Date.now()}`;
+    let username = profile.name || `user_${Date.now()}`;
     const email = profile.email;
     const avatar = profile.picture?.data?.url || null;
 
+    // 사용자명 중복 처리
     if (!user) {
+      // 사용자명이 중복되는 경우 숫자 추가
+      let counter = 1;
+      let originalUsername = username;
+      while (await User.findOne({ username })) {
+        username = `${originalUsername}${counter}`;
+        counter++;
+      }
+
       user = new User({
         username,
         email,
@@ -330,10 +347,9 @@ router.get('/facebook/callback', async (req, res) => {
       });
       await user.save();
     } else {
-      // 소셜 정보 및 프로필 동기화
+      // 기존 사용자의 경우 사용자명은 변경하지 않음 (중복 방지)
       user.socialProvider = 'facebook';
       user.socialId = profile.id;
-      user.username = username;
       if (avatar) user.avatar = avatar;
       await user.save();
     }
@@ -429,10 +445,19 @@ router.get('/kakao/callback', async (req, res) => {
     }
 
     let user = await User.findOne({ email });
-    const username = profile.properties?.nickname || `user_${Date.now()}`;
+    let username = profile.properties?.nickname || `user_${Date.now()}`;
     const avatar = profile.properties?.profile_image || null;
 
+    // 사용자명 중복 처리
     if (!user) {
+      // 사용자명이 중복되는 경우 숫자 추가
+      let counter = 1;
+      let originalUsername = username;
+      while (await User.findOne({ username })) {
+        username = `${originalUsername}${counter}`;
+        counter++;
+      }
+
       user = new User({
         username,
         email,
@@ -443,10 +468,9 @@ router.get('/kakao/callback', async (req, res) => {
       });
       await user.save();
     } else {
-      // 소셜 정보 및 프로필 동기화
+      // 기존 사용자의 경우 사용자명은 변경하지 않음 (중복 방지)
       user.socialProvider = 'kakao';
       user.socialId = profile.id.toString();
-      user.username = username;
       if (avatar) user.avatar = avatar;
       await user.save();
     }
