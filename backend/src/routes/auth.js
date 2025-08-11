@@ -261,8 +261,13 @@ router.get('/google/callback', async (req, res) => {
     }
   } catch (error) {
     console.error('Google callback error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
-    res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다.`);
+    res.redirect(`${frontendUrl}/login?error=소셜 로그인에 실패했습니다. (${error.message})`);
   }
 });
 
