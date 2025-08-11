@@ -274,10 +274,10 @@ export default function UploadPage() {
                 <label className="flex items-center">
                   <input
                     type="radio"
-                    name="isAI"
-                    value="true"
-                    checked={formData.isAI === 'true'}
-                    onChange={handleChange}
+                    name="contentType"
+                    value="ai"
+                    checked={formData.isAI === 'true' && !formData.isRequestedReview}
+                    onChange={() => setFormData({ ...formData, isAI: 'true', isRequestedReview: false })}
                     className="mr-2 text-blue-600 focus:ring-blue-500 accent-blue-600"
                     style={{ accentColor: '#2563eb' }}
                   />
@@ -286,33 +286,31 @@ export default function UploadPage() {
                 <label className="flex items-center">
                   <input
                     type="radio"
-                    name="isAI"
-                    value="false"
-                    checked={formData.isAI === 'false'}
-                    onChange={handleChange}
+                    name="contentType"
+                    value="real"
+                    checked={formData.isAI === 'false' && !formData.isRequestedReview}
+                    onChange={() => setFormData({ ...formData, isAI: 'false', isRequestedReview: false })}
                     className="mr-2 text-blue-600 focus:ring-blue-500 accent-blue-600"
                     style={{ accentColor: '#2563eb' }}
                   />
                   실제 콘텐츠
                 </label>
-              </div>
-              
-              {/* 감별 의뢰 체크박스 - 콘텐츠 유형 아래에 배치 */}
-              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <label className="flex items-center">
                   <input
-                    type="checkbox"
-                    name="isRequestedReview"
+                    type="radio"
+                    name="contentType"
+                    value="requested"
                     checked={formData.isRequestedReview}
-                    onChange={e => setFormData({ ...formData, isRequestedReview: e.target.checked })}
-                    className="mr-2"
+                    onChange={() => setFormData({ ...formData, isRequestedReview: true, isAI: 'false' })}
+                    className="mr-2 text-blue-600 focus:ring-blue-500 accent-blue-600"
+                    style={{ accentColor: '#2563eb' }}
                   />
                   <span className="text-sm text-yellow-800 font-semibold">
                     🔍 감별 의뢰입니다
                   </span>
                 </label>
                 <p className="text-xs text-yellow-700 mt-1 ml-6">
-                  본인도 진위 여부를 모를 때 체크하세요. 다른 사용자들이 함께 판단해드립니다.
+                  본인도 진위 여부를 모를 때 선택하세요. 다른 사용자들이 함께 판단해드립니다.
                 </p>
               </div>
             </div>
