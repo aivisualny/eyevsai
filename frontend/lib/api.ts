@@ -283,6 +283,30 @@ export async function revealAnswer(id: string) {
   return res.data;
 }
 
+// AI 생성 정보 공개
+export async function revealAIInfo(id: string, data: { aiModel: string; prompt: string; generationSettings?: any }) {
+  const res = await axios.patch(`${API_BASE}/content/${id}/reveal-ai-info`, data, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+// 사용자 피드백 등록
+export async function submitFeedback(id: string, accuracyRating: number) {
+  const res = await axios.post(`${API_BASE}/content/${id}/feedback`, { accuracyRating }, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+// 통계 대시보드
+export async function getDashboardStats() {
+  const res = await axios.get(`${API_BASE}/content/dashboard/stats`);
+  return res.data;
+}
+
+// 인기 콘텐츠 자동 재활용
+export async function autoRecycle() {
+  const res = await axios.post(`${API_BASE}/content/auto-recycle`, {}, { headers: getAuthHeaders() });
+  return res.data;
+}
+
 // 닉네임 설정 (최초 소셜 로그인용)
 export async function setupProfile(username: string) {
   const res = await axios.post(`${API_BASE}/auth/setup-profile`, { username }, { headers: getAuthHeaders() });

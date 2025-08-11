@@ -62,6 +62,13 @@ router.post('/', auth, async (req, res) => {
     // 콘텐츠 투표수 증가
     content.votes[vote] += 1;
     content.totalVotes += 1;
+    
+    // 자동 난이도 계산 및 업데이트
+    await content.updateCalculatedStats();
+    
+    // 자동 마감 연장 체크
+    await content.autoExtend();
+    
     await content.save();
 
     // 사용자 통계 업데이트

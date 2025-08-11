@@ -169,24 +169,35 @@ export default function VotePage() {
             <h2 className="text-2xl font-bold mb-4">{content.title}</h2>
             <p className="text-gray-600 mb-6">{content.description}</p>
             
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex flex-wrap gap-2">
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                  {content.category}
-                </span>
-                {/* 태그 표시 */}
-                {content.tags && content.tags.length > 0 && (
-                  content.tags.map((tag: string, index: number) => (
-                    <span key={index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                      #{tag}
-                    </span>
-                  ))
-                )}
-              </div>
-              <div className="text-sm text-gray-500">
-                업로드: {new Date(content.createdAt).toLocaleDateString()}
-              </div>
-            </div>
+                         <div className="flex justify-between items-center mb-6">
+               <div className="flex flex-wrap gap-2">
+                 <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                   {content.category}
+                 </span>
+                 {/* 자동 계산된 난이도 표시 */}
+                 {content.calculatedDifficulty && (
+                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                     content.calculatedDifficulty === 'easy' ? 'bg-green-100 text-green-800' :
+                     content.calculatedDifficulty === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                     'bg-red-100 text-red-800'
+                   }`}>
+                     {content.calculatedDifficulty === 'easy' ? '쉬움' :
+                      content.calculatedDifficulty === 'medium' ? '보통' : '어려움'}
+                   </span>
+                 )}
+                 {/* 태그 표시 */}
+                 {content.tags && content.tags.length > 0 && (
+                   content.tags.map((tag: string, index: number) => (
+                     <span key={index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                       #{tag}
+                     </span>
+                   ))
+                 )}
+               </div>
+               <div className="text-sm text-gray-500">
+                 업로드: {new Date(content.createdAt).toLocaleDateString()}
+               </div>
+             </div>
 
             {/* 정답률 시각화 */}
             {content.totalVotes > 0 && (

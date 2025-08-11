@@ -731,6 +731,36 @@ router.get('/recycle', async (req, res) => {
   }
 });
 
+// 인기 콘텐츠 자동 재활용 (스케줄러용)
+router.post('/auto-recycle', auth, async (req, res) => {
+  try {
+    // 마감된 콘텐츠 중에서 인기 있는 것들을 재활용
+    const popularContents = await Content.find({
+      isAnswerRevealed: true,
+      isRecycled: false,
+      totalVotes: { $gte: 20 }, // 20표 이상
+      accuracyRate: { $gte: 60 } // 정답률 60% 이상
+    }).sort({ totalVotes: -1, accuracyRate: -1 }).limit(10);
+
+    let recycledCount = 0;
+    for (const content of popularContents) {
+      content.isRecycled = true;
+      content.recycleAt = new Date();
+      content.recycleCount += 1;
+      await content.save();
+      recycledCount++;
+    }
+
+    res.json({ 
+      message: `${recycledCount}개의 인기 콘텐츠가 재활용되었습니다.`,
+      recycledContents: popularContents.map(c => ({ id: c._id, title: c.title }))
+    });
+  } catch (err) {
+    console.error('Auto recycle error:', err);
+    res.status(500).json({ error: '자동 재활용 처리 실패' });
+  }
+});
+
 // AI 난이도 분석 (개선된 로직)
 router.post('/analyze', auth, async (req, res) => {
   try {
@@ -805,6 +835,100 @@ router.post('/analyze-content', async (req, res) => {
     return res.json(mockResult);
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// 실시간 통계 대시보드
+router.get('/dashboard/stats', async (req, res) => {
+  try {
+    const now = new Date();
+    const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // 전체 통계
+    const totalContents = await Content.countDocuments({ status: 'approved' });
+    const totalVotes = await Content.aggregate([
+      { $match: { status: 'approved' } },
+      { $group: { _id: null, total: { $sum: '$totalVotes' } } }
+    ]);
+    const totalVoteCount = totalVotes[0]?.total || 0;
+
+    // 최근 24시간 통계
+    const recentContents = await Content.countDocuments({
+      status: 'approved',
+      createdAt: { $gte: last24Hours }
+    });
+
+    const recentVotes = await Content.aggregate([
+      { $match: { status: 'approved', createdAt: { $gte: last24Hours } } },
+      { $group: { _id: null, total: { $sum: '$totalVotes' } } }
+    ]);
+    const recentVoteCount = recentVotes[0]?.total || 0;
+
+    // 난이도별 통계
+    const difficultyStats = await Content.aggregate([
+      { $match: { status: 'approved', calculatedDifficulty: { $exists: true } } },
+      { $group: { _id: '$calculatedDifficulty', count: { $sum: 1 } } }
+    ]);
+
+    // 카테고리별 통계
+    const categoryStats = await Content.aggregate([
+      { $match: { status: 'approved' } },
+      { $group: { _id: '$category', count: { $sum: 1 } } }
+    ]);
+
+    // 일별 투표 트렌드 (최근 7일)
+    const dailyVoteTrend = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      date.setHours(0, 0, 0, 0);
+      
+      const nextDate = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+      
+      const dayVotes = await Content.aggregate([
+        { $match: { status: 'approved', createdAt: { $gte: date, $lt: nextDate } } },
+        { $group: { _id: null, total: { $sum: '$totalVotes' } } }
+      ]);
+      
+      dailyVoteTrend.push({
+        date: date.toISOString().split('T')[0],
+        votes: dayVotes[0]?.total || 0
+      });
+    }
+
+    // 인기 태그
+    const popularTags = await Content.aggregate([
+      { $match: { status: 'approved', tags: { $exists: true, $ne: [] } } },
+      { $unwind: '$tags' },
+      { $group: { _id: '$tags', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    res.json({
+      overview: {
+        totalContents,
+        totalVotes: totalVoteCount,
+        recentContents,
+        recentVotes: recentVoteCount
+      },
+      difficultyStats: difficultyStats.reduce((acc, stat) => {
+        acc[stat._id] = stat.count;
+        return acc;
+      }, {}),
+      categoryStats: categoryStats.reduce((acc, stat) => {
+        acc[stat._id] = stat.count;
+        return acc;
+      }, {}),
+      dailyVoteTrend,
+      popularTags: popularTags.map(tag => ({
+        tag: tag._id,
+        count: tag.count
+      }))
+    });
+  } catch (err) {
+    console.error('Dashboard stats error:', err);
+    res.status(500).json({ error: '통계 조회 실패' });
   }
 });
 
@@ -922,7 +1046,7 @@ router.patch('/admin/reports/:reportId', adminAuth, async (req, res) => {
   }
 });
 
-// 콘텐츠 수정 (업로더만)
+// 콘텐츠 수정 (업로더만, 마감 전까지)
 router.put('/:id', auth, async (req, res) => {
   try {
     const content = await Content.findById(req.params.id);
@@ -935,26 +1059,66 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ error: '수정 권한이 없습니다.' });
     }
 
+    // 마감된 콘텐츠는 수정 불가
+    if (content.isAnswerRevealed) {
+      return res.status(400).json({ error: '마감된 콘텐츠는 수정할 수 없습니다.' });
+    }
+
     const { title, description, category, tags, isAI, isRequestedReview } = req.body;
     
     // 태그 처리
     const tagsArray = processTags(tags);
     
+    // 수정 이력 저장
+    const editHistory = [];
+    if (title !== content.title) {
+      editHistory.push({
+        field: 'title',
+        oldValue: content.title,
+        newValue: title,
+        editedBy: req.user._id
+      });
+    }
+    if (description !== content.description) {
+      editHistory.push({
+        field: 'description',
+        oldValue: content.description,
+        newValue: description,
+        editedBy: req.user._id
+      });
+    }
+    if (category !== content.category) {
+      editHistory.push({
+        field: 'category',
+        oldValue: content.category,
+        newValue: category,
+        editedBy: req.user._id
+      });
+    }
+    
+    const updateData = {
+      title: title.trim(),
+      description: description.trim(),
+      category: category || 'other',
+      tags: tagsArray,
+      isAI: String(isAI) === 'true',
+      isRequestedReview: String(isRequestedReview) === 'true'
+    };
+    
+    // 수정 이력이 있으면 추가
+    if (editHistory.length > 0) {
+      updateData.$push = { editHistory: { $each: editHistory } };
+    }
+    
     const updatedContent = await Content.findByIdAndUpdate(
       req.params.id,
-      {
-        title: title.trim(),
-        description: description.trim(),
-        category: category || 'other',
-        tags: tagsArray,
-        isAI: String(isAI) === 'true',
-        isRequestedReview: String(isRequestedReview) === 'true'
-      },
+      updateData,
       { new: true }
     );
 
     res.json({ content: updatedContent });
   } catch (err) {
+    console.error('콘텐츠 수정 오류:', err);
     res.status(500).json({ error: '콘텐츠 수정 실패' });
   }
 });
@@ -993,6 +1157,112 @@ router.patch('/:id/reveal', auth, async (req, res) => {
   } catch (err) {
     console.error('Reveal answer error:', err);
     res.status(500).json({ error: '정답 공개 실패' });
+  }
+});
+
+// AI 생성 정보 공개 (업로더만, 마감 후)
+router.patch('/:id/reveal-ai-info', auth, async (req, res) => {
+  try {
+    const { aiModel, prompt, generationSettings } = req.body;
+    
+    const content = await Content.findById(req.params.id);
+    if (!content) {
+      return res.status(404).json({ error: '콘텐츠를 찾을 수 없습니다.' });
+    }
+
+    // 업로더만 공개 가능
+    if (content.uploadedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'AI 정보 공개 권한이 없습니다.' });
+    }
+
+    // 마감된 AI 콘텐츠만 공개 가능
+    if (!content.isAnswerRevealed || !content.isAI) {
+      return res.status(400).json({ error: '마감된 AI 콘텐츠만 AI 정보를 공개할 수 있습니다.' });
+    }
+
+    // 이미 공개된 경우
+    if (content.aiGenerationInfo.isInfoRevealed) {
+      return res.status(400).json({ error: '이미 AI 정보가 공개되었습니다.' });
+    }
+
+    const updatedContent = await Content.findByIdAndUpdate(
+      req.params.id,
+      {
+        'aiGenerationInfo.aiModel': aiModel,
+        'aiGenerationInfo.prompt': prompt,
+        'aiGenerationInfo.generationSettings': generationSettings,
+        'aiGenerationInfo.generationDate': new Date(),
+        'aiGenerationInfo.isInfoRevealed': true
+      },
+      { new: true }
+    );
+
+    res.json({ 
+      message: 'AI 생성 정보가 공개되었습니다.',
+      content: updatedContent 
+    });
+  } catch (err) {
+    console.error('Reveal AI info error:', err);
+    res.status(500).json({ error: 'AI 정보 공개 실패' });
+  }
+});
+
+// 사용자 피드백 등록 (마감 후)
+router.post('/:id/feedback', auth, async (req, res) => {
+  try {
+    const { accuracyRating } = req.body;
+    
+    if (!accuracyRating || accuracyRating < 1 || accuracyRating > 5) {
+      return res.status(400).json({ error: '정확성 평가는 1-5점 사이여야 합니다.' });
+    }
+
+    const content = await Content.findById(req.params.id);
+    if (!content) {
+      return res.status(404).json({ error: '콘텐츠를 찾을 수 없습니다.' });
+    }
+
+    // 마감된 콘텐츠만 피드백 가능
+    if (!content.isAnswerRevealed) {
+      return res.status(400).json({ error: '마감된 콘텐츠만 피드백을 남길 수 있습니다.' });
+    }
+
+    // 이미 피드백을 남긴 사용자인지 확인
+    const existingFeedback = await Vote.findOne({
+      content: req.params.id,
+      user: req.user._id,
+      hasFeedback: true
+    });
+
+    if (existingFeedback) {
+      return res.status(400).json({ error: '이미 피드백을 남기셨습니다.' });
+    }
+
+    // 피드백 통계 업데이트
+    const currentFeedback = content.userFeedback;
+    const newFeedbackCount = currentFeedback.feedbackCount + 1;
+    const newTotalRating = (currentFeedback.averageRating || 0) * currentFeedback.feedbackCount + accuracyRating;
+    const newAverageRating = Math.round((newTotalRating / newFeedbackCount) * 10) / 10;
+
+    await Content.findByIdAndUpdate(req.params.id, {
+      'userFeedback.accuracyRating': accuracyRating,
+      'userFeedback.feedbackCount': newFeedbackCount,
+      'userFeedback.averageRating': newAverageRating
+    });
+
+    // 투표에 피드백 표시
+    await Vote.findOneAndUpdate(
+      { content: req.params.id, user: req.user._id },
+      { hasFeedback: true }
+    );
+
+    res.json({ 
+      message: '피드백이 등록되었습니다.',
+      averageRating: newAverageRating,
+      feedbackCount: newFeedbackCount
+    });
+  } catch (err) {
+    console.error('Feedback error:', err);
+    res.status(500).json({ error: '피드백 등록 실패' });
   }
 });
 

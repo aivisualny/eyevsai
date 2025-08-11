@@ -31,6 +31,16 @@ export default function MyPage() {
   // 설정 모달 상태
   const [showSettings, setShowSettings] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState<'consecutive' | 'stats' | null>(null);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [editingContent, setEditingContent] = useState<any>(null);
+  const [editFormData, setEditFormData] = useState<any>({
+    title: '',
+    description: '',
+    category: 'other',
+    tags: [],
+    isAI: 'false',
+    isRequestedReview: false
+  });
 
   useEffect(() => {
     async function fetchData() {
@@ -268,6 +278,32 @@ export default function MyPage() {
       alert('정답이 공개되었습니다.');
     } catch (error: any) {
       alert(error.response?.data?.error || '정답 공개에 실패했습니다.');
+    }
+  };
+
+  const handleEditContent = (content: any) => {
+    setEditingContent(content);
+    setEditFormData({
+      title: content.title,
+      description: content.description,
+      category: content.category,
+      tags: content.tags || [],
+      isAI: content.isAI.toString(),
+      isRequestedReview: content.isRequestedReview
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateContent = async () => {
+    try {
+      await updateContent(editingContent._id, editFormData);
+      // 콘텐츠 목록 새로고침
+      const data = await getMyContent();
+      setMyContents(data.contents);
+      setShowEditModal(false);
+      alert('콘텐츠가 수정되었습니다.');
+    } catch (error: any) {
+      alert(error.response?.data?.error || '콘텐츠 수정에 실패했습니다.');
     }
   };
 
@@ -646,8 +682,11 @@ export default function MyPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            // 수정 기능은 나중에 구현
-                            alert('수정 기능은 준비 중입니다.');
+                            if (content.isAnswerRevealed) {
+                              alert('마감된 콘텐츠는 수정할 수 없습니다.');
+                              return;
+                            }
+                            handleEditContent(content);
                           }}
                         >
                           수정
