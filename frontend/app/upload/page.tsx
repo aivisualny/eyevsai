@@ -14,7 +14,7 @@ export default function UploadPage() {
   const [formData, setFormData] = useState<any>({
     title: '',
     description: '',
-    category: 'other',
+    category: 'other', // 기본값으로 유지 (백엔드에서 필요)
     tags: [],
     isAI: 'false',
     isRequestedReview: false
@@ -94,7 +94,7 @@ export default function UploadPage() {
       const uploadFormData = new FormData();
       uploadFormData.append('title', formData.title);
       uploadFormData.append('description', formData.description);
-      uploadFormData.append('category', formData.category);
+      uploadFormData.append('category', 'other'); // 기본값으로 설정
       
       // 태그 처리 개선
       if (formData.tags && formData.tags.length > 0) {
@@ -252,23 +252,7 @@ export default function UploadPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                카테고리
-              </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="art">아트</option>
-                <option value="photography">사진</option>
-                <option value="video">비디오</option>
-                <option value="text">텍스트</option>
-                <option value="other">기타</option>
-              </select>
-            </div>
+
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -294,7 +278,7 @@ export default function UploadPage() {
                     value="true"
                     checked={formData.isAI === 'true'}
                     onChange={handleChange}
-                    className="mr-2 text-blue-600 focus:ring-blue-500"
+                    className="mr-2 text-blue-600 focus:ring-blue-500 accent-blue-600"
                   />
                   AI 생성 콘텐츠
                 </label>
@@ -305,7 +289,7 @@ export default function UploadPage() {
                     value="false"
                     checked={formData.isAI === 'false'}
                     onChange={handleChange}
-                    className="mr-2 text-blue-600 focus:ring-blue-500"
+                    className="mr-2 text-blue-600 focus:ring-blue-500 accent-blue-600"
                   />
                   실제 콘텐츠
                 </label>
