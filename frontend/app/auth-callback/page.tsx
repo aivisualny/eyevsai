@@ -10,6 +10,7 @@ export default function AuthCallbackPage() {
     const token = searchParams.get('token');
     const userData = searchParams.get('user');
     const error = searchParams.get('error');
+    const setup = searchParams.get('setup');
     
     if (error) {
       alert(error);
@@ -24,11 +25,18 @@ export default function AuthCallbackPage() {
         try {
           const user = JSON.parse(decodeURIComponent(userData));
           localStorage.setItem('user', JSON.stringify(user));
+          
+          // 프로필 설정이 필요한 경우
+          if (setup === 'profile' && !user.isProfileComplete) {
+            window.location.href = `/setup-profile?token=${token}&user=${userData}`;
+            return;
+          }
         } catch (error) {
           console.error('사용자 정보 파싱 오류:', error);
         }
       }
       
+      // 일반 로그인 또는 프로필이 완성된 경우
       window.location.href = '/';
     } else {
       alert('로그인에 실패했습니다.');

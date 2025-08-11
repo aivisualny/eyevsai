@@ -263,4 +263,10 @@ export async function updateContent(id: string, data: any) {
 export async function deleteContent(id: string) {
   const res = await axios.delete(`${API_BASE}/content/${id}`, { headers: getAuthHeaders() });
   return res.data;
+}
+
+// 닉네임 설정 (최초 소셜 로그인용)
+export async function setupProfile(username: string) {
+  const res = await axios.post(`${API_BASE}/auth/setup-profile`, { username }, { headers: getAuthHeaders() });
+  return res.data;
 } 

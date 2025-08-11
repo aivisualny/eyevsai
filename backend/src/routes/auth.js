@@ -332,34 +332,23 @@ router.get('/facebook/callback', async (req, res) => {
     const email = profile.email;
     const avatar = profile.picture?.data?.url || null;
 
-    // 사용자명 중복 처리
+    // 사용자 처리
     if (!user) {
-      // 사용자명이 중복되는 경우 숫자 추가
-      let counter = 1;
-      let originalUsername = username;
-      let finalUsername = username;
+      // 최초 소셜 로그인: 임시 사용자명으로 가입
+      const tempUsername = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
       
-      // 중복되지 않는 사용자명을 찾을 때까지 반복
-      while (true) {
-        const existingUser = await User.findOne({ username: finalUsername });
-        if (!existingUser) {
-          break;
-        }
-        finalUsername = `${originalUsername}${counter}`;
-        counter++;
-      }
-
       user = new User({
-        username: finalUsername,
+        username: tempUsername,
         email,
         password: 'social_login_' + Math.random().toString(36).substr(2, 9),
         avatar,
         socialProvider: 'facebook',
-        socialId: profile.id
+        socialId: profile.id,
+        isProfileComplete: false // 프로필 미완성 상태
       });
       await user.save();
     } else {
-      // 기존 사용자의 경우 사용자명은 변경하지 않음 (중복 방지)
+      // 기존 사용자: 소셜 정보 업데이트
       user.socialProvider = 'facebook';
       user.socialId = profile.id;
       if (avatar) user.avatar = avatar;
@@ -377,12 +366,21 @@ router.get('/facebook/callback', async (req, res) => {
       totalVotes: user.totalVotes,
       correctVotes: user.correctVotes,
       avatar: user.avatar,
-      socialProvider: user.socialProvider
+      socialProvider: user.socialProvider,
+      isProfileComplete: user.isProfileComplete
     };
     
     const userData = encodeURIComponent(JSON.stringify(userInfo));
     const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
-    res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
+    
+    // 프로필 완성 여부에 따라 리디렉션
+    if (!user.isProfileComplete) {
+      // 최초 로그인: 닉네임 설정 페이지로
+      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}&setup=profile`);
+    } else {
+      // 기존 사용자: 메인 페이지로
+      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
+    }
   } catch (error) {
     console.error('Facebook callback error:', error);
     const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
@@ -460,34 +458,23 @@ router.get('/kakao/callback', async (req, res) => {
     let username = profile.properties?.nickname || `user_${Date.now()}`;
     const avatar = profile.properties?.profile_image || null;
 
-    // 사용자명 중복 처리
+    // 사용자 처리
     if (!user) {
-      // 사용자명이 중복되는 경우 숫자 추가
-      let counter = 1;
-      let originalUsername = username;
-      let finalUsername = username;
+      // 최초 소셜 로그인: 임시 사용자명으로 가입
+      const tempUsername = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
       
-      // 중복되지 않는 사용자명을 찾을 때까지 반복
-      while (true) {
-        const existingUser = await User.findOne({ username: finalUsername });
-        if (!existingUser) {
-          break;
-        }
-        finalUsername = `${originalUsername}${counter}`;
-        counter++;
-      }
-
       user = new User({
-        username: finalUsername,
+        username: tempUsername,
         email,
         password: 'social_login_' + Math.random().toString(36).substr(2, 9),
         avatar,
         socialProvider: 'kakao',
-        socialId: profile.id.toString()
+        socialId: profile.id.toString(),
+        isProfileComplete: false // 프로필 미완성 상태
       });
       await user.save();
     } else {
-      // 기존 사용자의 경우 사용자명은 변경하지 않음 (중복 방지)
+      // 기존 사용자: 소셜 정보 업데이트
       user.socialProvider = 'kakao';
       user.socialId = profile.id.toString();
       if (avatar) user.avatar = avatar;
@@ -505,12 +492,21 @@ router.get('/kakao/callback', async (req, res) => {
       totalVotes: user.totalVotes,
       correctVotes: user.correctVotes,
       avatar: user.avatar,
-      socialProvider: user.socialProvider
+      socialProvider: user.socialProvider,
+      isProfileComplete: user.isProfileComplete
     };
     
     const userData = encodeURIComponent(JSON.stringify(userInfo));
     const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
-    res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
+    
+    // 프로필 완성 여부에 따라 리디렉션
+    if (!user.isProfileComplete) {
+      // 최초 로그인: 닉네임 설정 페이지로
+      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}&setup=profile`);
+    } else {
+      // 기존 사용자: 메인 페이지로
+      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
+    }
   } catch (error) {
     console.error('Kakao callback error:', error);
     const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
