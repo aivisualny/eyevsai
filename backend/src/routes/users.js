@@ -89,6 +89,22 @@ router.post('/reset-stats', auth, async (req, res) => {
   }
 });
 
+// 연속정답 초기화
+router.post('/reset-consecutive', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    // 연속정답만 초기화
+    user.consecutiveCorrect = 0;
+    
+    await user.save();
+    
+    res.json({ message: '연속정답이 초기화되었습니다.' });
+  } catch (err) {
+    res.status(500).json({ error: '연속정답 초기화 중 오류 발생' });
+  }
+});
+
 // 내 업로드한 콘텐츠 조회
 router.get('/my-content', auth, async (req, res) => {
   try {

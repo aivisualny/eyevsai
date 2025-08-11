@@ -238,6 +238,18 @@ export async function withdraw() {
   return res.data;
 }
 
+// 연속정답 초기화
+export async function resetConsecutive() {
+  const res = await axios.post(`${API_BASE}/users/reset-consecutive`, {}, { headers: getAuthHeaders() });
+  return res.data;
+}
+
+// 통계 초기화
+export async function resetStats() {
+  const res = await axios.post(`${API_BASE}/users/reset-stats`, {}, { headers: getAuthHeaders() });
+  return res.data;
+}
+
 // 내 통계 초기화
 export async function resetMyStats() {
   const res = await axios.post(`${API_BASE}/users/reset-stats`, {}, { headers: getAuthHeaders() });
