@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { getMe, getMyVotesFiltered, getMyVoteStats, getMyBadges, getFollowers, getFollowing, getMyRequestedReviews, withdraw, resetConsecutive, resetStats, updateProfile, checkUsername } from "@/lib/api";
+import { getMe, getMyVotesFiltered, getMyVoteStats, getMyBadges, getFollowers, getFollowing, getMyRequestedReviews, withdraw, resetConsecutive, resetStats, updateProfile, checkUsername, getMyContent, deleteContent, revealAnswer, updateContent } from "@/lib/api";
 import { User, Vote, VoteStats, UserBadge } from "@/types/content";
 
 export default function MyPage() {
@@ -145,7 +145,7 @@ export default function MyPage() {
   const handleResetConsecutive = async () => {
     try {
       await resetConsecutive();
-      setUser(prev => ({ ...prev, consecutiveCorrect: 0 }));
+      setUser((prev: any) => ({ ...prev, consecutiveCorrect: 0 }));
       setShowResetConfirm(null);
     } catch (error: any) {
       setError('연속정답 초기화에 실패했습니다.');
@@ -156,7 +156,7 @@ export default function MyPage() {
   const handleResetStats = async () => {
     try {
       await resetStats();
-      setUser(prev => ({
+      setUser((prev: any) => ({
         ...prev,
         totalVotes: 0,
         correctVotes: 0,
@@ -164,7 +164,7 @@ export default function MyPage() {
         consecutiveCorrect: 0,
         maxConsecutiveCorrect: 0
       }));
-      setVoteStats(prev => ({
+      setVoteStats((prev: any) => ({
         ...prev,
         totalVotes: 0,
         correctVotes: 0,
@@ -673,14 +673,12 @@ export default function MyPage() {
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
-                          size="sm"
                           onClick={() => window.location.href = `/vote/${content._id}`}
                         >
                           보기
                         </Button>
                         <Button
                           variant="outline"
-                          size="sm"
                           onClick={() => {
                             if (content.isAnswerRevealed) {
                               alert('마감된 콘텐츠는 수정할 수 없습니다.');
@@ -693,7 +691,6 @@ export default function MyPage() {
                         </Button>
                         <Button
                           variant="outline"
-                          size="sm"
                           onClick={() => {
                             if (confirm('정말로 이 콘텐츠를 삭제하시겠습니까?')) {
                               handleDeleteContent(content._id);
@@ -714,7 +711,6 @@ export default function MyPage() {
                             </span>
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => {
                                 if (confirm('정답을 지금 공개하시겠습니까?')) {
                                   handleRevealAnswer(content._id);

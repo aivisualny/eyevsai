@@ -18,6 +18,7 @@ export default function VotePage() {
   const contentId = params.id as string;
   
   const [content, setContent] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [voting, setVoting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -28,7 +29,15 @@ export default function VotePage() {
 
   useEffect(() => {
     loadContent();
+    loadUser();
   }, [contentId]);
+
+  const loadUser = () => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  };
 
   const loadContent = async () => {
     try {

@@ -110,11 +110,12 @@ export default function VotePage() {
         {/* 콘텐츠 목록 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredContents(tab, contents).map((content: any) => (
-            <Card
+            <div
               key={content._id}
               className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => handleContentClick(content._id)}
             >
+              <Card>
               <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
                 {content.mediaType === 'image' ? (
                   <img
@@ -197,6 +198,7 @@ export default function VotePage() {
                 )}
               </div>
             </Card>
+            </div>
           ))}
         </div>
 

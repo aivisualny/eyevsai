@@ -307,6 +307,12 @@ export async function autoRecycle() {
   return res.data;
 }
 
+// 프로필 업데이트
+export async function updateProfile(data: { username?: string; email?: string }) {
+  const res = await axios.patch(`${API_BASE}/users/profile`, data, { headers: getAuthHeaders() });
+  return res.data;
+}
+
 // 닉네임 설정 (최초 소셜 로그인용)
 export async function setupProfile(username: string) {
   const res = await axios.post(`${API_BASE}/auth/setup-profile`, { username }, { headers: getAuthHeaders() });
