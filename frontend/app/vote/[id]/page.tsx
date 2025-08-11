@@ -239,31 +239,60 @@ export default function VotePage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="text-center mb-6">
-                  <h3 className="text-lg font-semibold mb-2">이 콘텐츠는 무엇일까요?</h3>
-                  <p className="text-gray-600">정확한 판단을 위해 자세히 살펴보세요!</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    onClick={() => handleVote('ai')}
-                    disabled={voting || hasVoted}
-                    className="h-16 text-lg font-semibold bg-red-500 hover:bg-red-600"
-                  >
-                    {voting ? '투표 중...' : '🤖 AI 생성'}
-                  </Button>
-                  <Button
-                    onClick={() => handleVote('real')}
-                    disabled={voting || hasVoted}
-                    className="h-16 text-lg font-semibold bg-green-500 hover:bg-green-600"
-                  >
-                    {voting ? '투표 중...' : '👤 실제 콘텐츠'}
-                  </Button>
-                </div>
-                
-                <div className="text-center text-sm text-gray-500">
-                  현재 투표: {content.totalVotes}회
-                </div>
+                {/* 본인이 업로드한 콘텐츠인지 확인 */}
+                {user && content.uploadedBy && user.id === content.uploadedBy ? (
+                  <div className="bg-orange-100 border border-orange-300 p-6 rounded-lg text-center">
+                    <div className="text-4xl mb-4">🚫</div>
+                    <h3 className="text-lg font-semibold text-orange-800 mb-2">
+                      본인이 업로드한 콘텐츠입니다
+                    </h3>
+                    <p className="text-orange-700 mb-4">
+                      본인이 업로드한 콘텐츠에는 투표할 수 없습니다.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <Button 
+                        onClick={() => window.location.href = '/vote'}
+                        variant="outline"
+                      >
+                        다른 콘텐츠 투표하기
+                      </Button>
+                      <Button 
+                        onClick={() => window.location.href = '/mypage'}
+                        variant="outline"
+                      >
+                        내 콘텐츠 관리
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-center mb-6">
+                      <h3 className="text-lg font-semibold mb-2">이 콘텐츠는 무엇일까요?</h3>
+                      <p className="text-gray-600">정확한 판단을 위해 자세히 살펴보세요!</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        onClick={() => handleVote('ai')}
+                        disabled={voting || hasVoted}
+                        className="h-16 text-lg font-semibold bg-red-500 hover:bg-red-600"
+                      >
+                        {voting ? '투표 중...' : '🤖 AI 생성'}
+                      </Button>
+                      <Button
+                        onClick={() => handleVote('real')}
+                        disabled={voting || hasVoted}
+                        className="h-16 text-lg font-semibold bg-green-500 hover:bg-green-600"
+                      >
+                        {voting ? '투표 중...' : '👤 실제 콘텐츠'}
+                      </Button>
+                    </div>
+                    
+                    <div className="text-center text-sm text-gray-500">
+                      현재 투표: {content.totalVotes}회
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>

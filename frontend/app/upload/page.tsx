@@ -347,20 +347,25 @@ export default function UploadPage() {
                   실제 콘텐츠
                 </label>
               </div>
-            </div>
-
-            {/* 감별 의뢰 체크박스 */}
-            <div>
-              <label className="flex items-center mt-2">
-                <input
-                  type="checkbox"
-                  name="isRequestedReview"
-                  checked={formData.isRequestedReview}
-                  onChange={e => setFormData({ ...formData, isRequestedReview: e.target.checked })}
-                  className="mr-2"
-                />
-                <span className="text-sm text-blue-700 font-semibold">감별 의뢰입니다 <span className="text-gray-500">(본인도 진위 여부를 모를 때 체크)</span></span>
-              </label>
+              
+              {/* 감별 의뢰 체크박스 - 콘텐츠 유형 아래에 배치 */}
+              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isRequestedReview"
+                    checked={formData.isRequestedReview}
+                    onChange={e => setFormData({ ...formData, isRequestedReview: e.target.checked })}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-yellow-800 font-semibold">
+                    🔍 감별 의뢰입니다
+                  </span>
+                </label>
+                <p className="text-xs text-yellow-700 mt-1 ml-6">
+                  본인도 진위 여부를 모를 때 체크하세요. 다른 사용자들이 함께 판단해드립니다.
+                </p>
+              </div>
             </div>
 
             <div>
