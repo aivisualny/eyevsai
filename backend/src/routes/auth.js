@@ -212,8 +212,10 @@ router.get('/google/callback', async (req, res) => {
 
     // 사용자 처리
     if (!user) {
-      // 최초 소셜 로그인: 임시 사용자명으로 가입
-      const tempUsername = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      // 최초 소셜 로그인: 임시 사용자명으로 가입 (20자 이하로 제한)
+      const timestamp = Date.now().toString().slice(-8); // 마지막 8자리만 사용
+      const randomStr = Math.random().toString(36).substr(2, 3); // 3자리만 사용
+      const tempUsername = `temp_${timestamp}_${randomStr}`; // 최대 16자
       
       user = new User({
         username: tempUsername,
@@ -339,8 +341,10 @@ router.get('/facebook/callback', async (req, res) => {
 
     // 사용자 처리
     if (!user) {
-      // 최초 소셜 로그인: 임시 사용자명으로 가입
-      const tempUsername = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      // 최초 소셜 로그인: 임시 사용자명으로 가입 (20자 이하로 제한)
+      const timestamp = Date.now().toString().slice(-8); // 마지막 8자리만 사용
+      const randomStr = Math.random().toString(36).substr(2, 3); // 3자리만 사용
+      const tempUsername = `temp_${timestamp}_${randomStr}`; // 최대 16자
       
       user = new User({
         username: tempUsername,
@@ -465,8 +469,10 @@ router.get('/kakao/callback', async (req, res) => {
 
     // 사용자 처리
     if (!user) {
-      // 최초 소셜 로그인: 임시 사용자명으로 가입
-      const tempUsername = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      // 최초 소셜 로그인: 임시 사용자명으로 가입 (20자 이하로 제한)
+      const timestamp = Date.now().toString().slice(-8); // 마지막 8자리만 사용
+      const randomStr = Math.random().toString(36).substr(2, 3); // 3자리만 사용
+      const tempUsername = `temp_${timestamp}_${randomStr}`; // 최대 16자
       
       user = new User({
         username: tempUsername,
