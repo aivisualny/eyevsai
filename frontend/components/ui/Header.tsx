@@ -63,10 +63,7 @@ const Header = ({ user, onLogout, onWithdraw }: {
               )}
             </div>
           ) : (
-            <>
-              <Link href="/login" className="px-4 py-2 rounded-md border border-gray-200 bg-gray-50 hover:bg-gray-100 font-semibold">로그인</Link>
-              <Link href="/register" className="px-4 py-2 rounded-md border border-gray-200 bg-gray-50 hover:bg-gray-100 font-semibold">회원가입</Link>
-            </>
+            <Link href="/login" className="px-4 py-2 rounded-md border border-gray-200 bg-gray-50 hover:bg-gray-100 font-semibold">로그인</Link>
           )}
         </div>
       </div>
