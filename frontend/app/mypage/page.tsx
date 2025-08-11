@@ -362,7 +362,7 @@ export default function MyPage() {
                     <div className="text-sm text-gray-600">포인트</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{user.consecutiveCorrect}</div>
+                    <div className="text-2xl font-bold text-orange-600">{user.consecutiveCorrect}회</div>
                     <div className="text-sm text-gray-600">연속정답</div>
                   </div>
                 </div>

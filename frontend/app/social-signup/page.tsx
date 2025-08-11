@@ -108,8 +108,8 @@ export default function SocialSignupPage() {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
-      // 성공 시 메인 페이지로 이동
-      router.push('/');
+      // 성공 시 메인 페이지로 이동 (강제 새로고침으로 헤더 업데이트)
+      window.location.href = '/';
     } catch (error: any) {
       setError(error.response?.data?.error || '회원가입에 실패했습니다.');
     } finally {
