@@ -279,6 +279,7 @@ export default function UploadPage() {
                     checked={formData.isAI === 'true'}
                     onChange={handleChange}
                     className="mr-2 text-blue-600 focus:ring-blue-500 accent-blue-600"
+                    style={{ accentColor: '#2563eb' }}
                   />
                   AI 생성 콘텐츠
                 </label>
@@ -290,6 +291,7 @@ export default function UploadPage() {
                     checked={formData.isAI === 'false'}
                     onChange={handleChange}
                     className="mr-2 text-blue-600 focus:ring-blue-500 accent-blue-600"
+                    style={{ accentColor: '#2563eb' }}
                   />
                   실제 콘텐츠
                 </label>
