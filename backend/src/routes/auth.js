@@ -212,53 +212,46 @@ router.get('/google/callback', async (req, res) => {
 
     // 사용자 처리
     if (!user) {
-      // 최초 소셜 로그인: 임시 사용자명으로 가입 (20자 이하로 제한)
-      const timestamp = Date.now().toString().slice(-8); // 마지막 8자리만 사용
-      const randomStr = Math.random().toString(36).substr(2, 3); // 3자리만 사용
-      const tempUsername = `temp_${timestamp}_${randomStr}`; // 최대 16자
-      
-      user = new User({
-        username: tempUsername,
-        email,
-        password: 'social_login_' + Math.random().toString(36).substr(2, 9),
-        avatar,
+      // 새로운 소셜 사용자: 임시 토큰 생성하여 추가 정보 입력 페이지로
+      const tempToken = jwt.sign({ 
+        email: profile.email,
         socialProvider: 'google',
         socialId: profile.id,
-        isProfileComplete: false // 프로필 미완성 상태
-      });
-      await user.save();
+        avatar: profile.picture || null,
+        temp: true
+      }, process.env.JWT_SECRET, { expiresIn: '10m' }); // 10분 유효
+      
+      const userData = encodeURIComponent(JSON.stringify({
+        email: profile.email,
+        socialProvider: 'google',
+        avatar: profile.picture || null
+      }));
+      
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
+      res.redirect(`${frontendUrl}/social-signup?token=${tempToken}&user=${userData}`);
     } else {
-      // 기존 사용자: 소셜 정보 업데이트
+      // 기존 사용자: 소셜 정보 업데이트 후 바로 로그인
       user.socialProvider = 'google';
       user.socialId = profile.id;
       if (avatar) user.avatar = avatar;
       await user.save();
-    }
 
-    // JWT 토큰 생성
-    const token = generateToken(user._id);
-    const userInfo = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      points: user.points,
-      totalVotes: user.totalVotes,
-      correctVotes: user.correctVotes,
-      avatar: user.avatar,
-      socialProvider: user.socialProvider,
-      isProfileComplete: user.isProfileComplete
-    };
-    
-    const userData = encodeURIComponent(JSON.stringify(userInfo));
-    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
-    
-    // 프로필 완성 여부에 따라 리디렉션
-    if (!user.isProfileComplete) {
-      // 최초 로그인: 닉네임 설정 페이지로
-      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}&setup=profile`);
-    } else {
-      // 기존 사용자: 메인 페이지로
+      // JWT 토큰 생성
+      const token = generateToken(user._id);
+      const userInfo = {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        points: user.points,
+        totalVotes: user.totalVotes,
+        correctVotes: user.correctVotes,
+        avatar: user.avatar,
+        socialProvider: user.socialProvider
+      };
+      
+      const userData = encodeURIComponent(JSON.stringify(userInfo));
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
     }
   } catch (error) {
@@ -341,53 +334,46 @@ router.get('/facebook/callback', async (req, res) => {
 
     // 사용자 처리
     if (!user) {
-      // 최초 소셜 로그인: 임시 사용자명으로 가입 (20자 이하로 제한)
-      const timestamp = Date.now().toString().slice(-8); // 마지막 8자리만 사용
-      const randomStr = Math.random().toString(36).substr(2, 3); // 3자리만 사용
-      const tempUsername = `temp_${timestamp}_${randomStr}`; // 최대 16자
-      
-      user = new User({
-        username: tempUsername,
-        email,
-        password: 'social_login_' + Math.random().toString(36).substr(2, 9),
-        avatar,
+      // 새로운 소셜 사용자: 임시 토큰 생성하여 추가 정보 입력 페이지로
+      const tempToken = jwt.sign({ 
+        email: profile.email,
         socialProvider: 'facebook',
         socialId: profile.id,
-        isProfileComplete: false // 프로필 미완성 상태
-      });
-      await user.save();
+        avatar: profile.picture?.data?.url || null,
+        temp: true
+      }, process.env.JWT_SECRET, { expiresIn: '10m' }); // 10분 유효
+      
+      const userData = encodeURIComponent(JSON.stringify({
+        email: profile.email,
+        socialProvider: 'facebook',
+        avatar: profile.picture?.data?.url || null
+      }));
+      
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
+      res.redirect(`${frontendUrl}/social-signup?token=${tempToken}&user=${userData}`);
     } else {
-      // 기존 사용자: 소셜 정보 업데이트
+      // 기존 사용자: 소셜 정보 업데이트 후 바로 로그인
       user.socialProvider = 'facebook';
       user.socialId = profile.id;
       if (avatar) user.avatar = avatar;
       await user.save();
-    }
 
-    // JWT 토큰 생성
-    const token = generateToken(user._id);
-    const userInfo = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      points: user.points,
-      totalVotes: user.totalVotes,
-      correctVotes: user.correctVotes,
-      avatar: user.avatar,
-      socialProvider: user.socialProvider,
-      isProfileComplete: user.isProfileComplete
-    };
-    
-    const userData = encodeURIComponent(JSON.stringify(userInfo));
-    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
-    
-    // 프로필 완성 여부에 따라 리디렉션
-    if (!user.isProfileComplete) {
-      // 최초 로그인: 닉네임 설정 페이지로
-      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}&setup=profile`);
-    } else {
-      // 기존 사용자: 메인 페이지로
+      // JWT 토큰 생성
+      const token = generateToken(user._id);
+      const userInfo = {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        points: user.points,
+        totalVotes: user.totalVotes,
+        correctVotes: user.correctVotes,
+        avatar: user.avatar,
+        socialProvider: user.socialProvider
+      };
+      
+      const userData = encodeURIComponent(JSON.stringify(userInfo));
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
     }
   } catch (error) {
@@ -469,53 +455,46 @@ router.get('/kakao/callback', async (req, res) => {
 
     // 사용자 처리
     if (!user) {
-      // 최초 소셜 로그인: 임시 사용자명으로 가입 (20자 이하로 제한)
-      const timestamp = Date.now().toString().slice(-8); // 마지막 8자리만 사용
-      const randomStr = Math.random().toString(36).substr(2, 3); // 3자리만 사용
-      const tempUsername = `temp_${timestamp}_${randomStr}`; // 최대 16자
-      
-      user = new User({
-        username: tempUsername,
-        email,
-        password: 'social_login_' + Math.random().toString(36).substr(2, 9),
-        avatar,
+      // 새로운 소셜 사용자: 임시 토큰 생성하여 추가 정보 입력 페이지로
+      const tempToken = jwt.sign({ 
+        email: profile.kakao_account?.email,
         socialProvider: 'kakao',
         socialId: profile.id.toString(),
-        isProfileComplete: false // 프로필 미완성 상태
-      });
-      await user.save();
+        avatar: profile.properties?.profile_image || null,
+        temp: true
+      }, process.env.JWT_SECRET, { expiresIn: '10m' }); // 10분 유효
+      
+      const userData = encodeURIComponent(JSON.stringify({
+        email: profile.kakao_account?.email,
+        socialProvider: 'kakao',
+        avatar: profile.properties?.profile_image || null
+      }));
+      
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
+      res.redirect(`${frontendUrl}/social-signup?token=${tempToken}&user=${userData}`);
     } else {
-      // 기존 사용자: 소셜 정보 업데이트
+      // 기존 사용자: 소셜 정보 업데이트 후 바로 로그인
       user.socialProvider = 'kakao';
       user.socialId = profile.id.toString();
       if (avatar) user.avatar = avatar;
       await user.save();
-    }
 
-    // JWT 토큰 생성
-    const token = generateToken(user._id);
-    const userInfo = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      points: user.points,
-      totalVotes: user.totalVotes,
-      correctVotes: user.correctVotes,
-      avatar: user.avatar,
-      socialProvider: user.socialProvider,
-      isProfileComplete: user.isProfileComplete
-    };
-    
-    const userData = encodeURIComponent(JSON.stringify(userInfo));
-    const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
-    
-    // 프로필 완성 여부에 따라 리디렉션
-    if (!user.isProfileComplete) {
-      // 최초 로그인: 닉네임 설정 페이지로
-      res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}&setup=profile`);
-    } else {
-      // 기존 사용자: 메인 페이지로
+      // JWT 토큰 생성
+      const token = generateToken(user._id);
+      const userInfo = {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        points: user.points,
+        totalVotes: user.totalVotes,
+        correctVotes: user.correctVotes,
+        avatar: user.avatar,
+        socialProvider: user.socialProvider
+      };
+      
+      const userData = encodeURIComponent(JSON.stringify(userInfo));
+      const frontendUrl = process.env.FRONTEND_URL || 'https://eyevsai-frontend-kr9d.vercel.app';
       res.redirect(`${frontendUrl}/auth-callback?token=${token}&user=${userData}`);
     }
   } catch (error) {
@@ -624,7 +603,83 @@ router.put('/profile', auth, async (req, res) => {
   }
 });
 
-// 닉네임 설정 (최초 소셜 로그인용)
+// 소셜 회원가입 완료 (새로운 사용자용)
+router.post('/social-signup', async (req, res) => {
+  try {
+    const { token, username } = req.body;
+    
+    // 임시 토큰 검증
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded.temp || !decoded.email) {
+      return res.status(400).json({ error: '유효하지 않은 토큰입니다.' });
+    }
+    
+    // 사용자명 유효성 검사
+    if (!username || username.length < 3 || username.length > 20) {
+      return res.status(400).json({ 
+        error: '사용자명은 3-20자 사이여야 합니다.' 
+      });
+    }
+    
+    if (!/^[a-zA-Z0-9가-힣_]+$/.test(username)) {
+      return res.status(400).json({ 
+        error: '사용자명은 영문, 숫자, 한글, 언더스코어(_)만 사용 가능합니다.' 
+      });
+    }
+    
+    // 중복 확인
+    const existingUser = await User.findOne({ 
+      $or: [{ email: decoded.email }, { username }] 
+    });
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: '이미 가입된 이메일이거나 사용 중인 사용자명입니다.' 
+      });
+    }
+    
+    // 새 사용자 생성
+    const user = new User({
+      username,
+      email: decoded.email,
+      password: 'social_login_' + Math.random().toString(36).substr(2, 9),
+      avatar: decoded.avatar,
+      socialProvider: decoded.socialProvider,
+      socialId: decoded.socialId
+    });
+    
+    await user.save();
+    
+    // 정식 JWT 토큰 생성
+    const authToken = generateToken(user._id);
+    
+    res.json({
+      message: '소셜 회원가입이 완료되었습니다.',
+      token: authToken,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        points: user.points,
+        totalVotes: user.totalVotes,
+        correctVotes: user.correctVotes,
+        avatar: user.avatar,
+        socialProvider: user.socialProvider
+      }
+    });
+  } catch (error) {
+    console.error('Social signup error:', error);
+    if (error.name === 'JsonWebTokenError') {
+      res.status(400).json({ error: '유효하지 않은 토큰입니다.' });
+    } else if (error.name === 'TokenExpiredError') {
+      res.status(400).json({ error: '토큰이 만료되었습니다. 다시 시도해주세요.' });
+    } else {
+      res.status(500).json({ error: '소셜 회원가입에 실패했습니다.' });
+    }
+  }
+});
+
+// 닉네임 설정 (최초 소셜 로그인용) - 기존 코드 유지
 router.post('/setup-profile', auth, async (req, res) => {
   try {
     const { username } = req.body;

@@ -269,4 +269,10 @@ export async function deleteContent(id: string) {
 export async function setupProfile(username: string) {
   const res = await axios.post(`${API_BASE}/auth/setup-profile`, { username }, { headers: getAuthHeaders() });
   return res.data;
+}
+
+// 소셜 회원가입 완료
+export async function socialSignup(token: string, username: string) {
+  const res = await axios.post(`${API_BASE}/auth/social-signup`, { token, username });
+  return res.data;
 } 
