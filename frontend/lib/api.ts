@@ -277,6 +277,12 @@ export async function deleteContent(id: string) {
   return res.data;
 }
 
+// 정답 공개
+export async function revealAnswer(id: string) {
+  const res = await axios.patch(`${API_BASE}/content/${id}/reveal`, {}, { headers: getAuthHeaders() });
+  return res.data;
+}
+
 // 닉네임 설정 (최초 소셜 로그인용)
 export async function setupProfile(username: string) {
   const res = await axios.post(`${API_BASE}/auth/setup-profile`, { username }, { headers: getAuthHeaders() });

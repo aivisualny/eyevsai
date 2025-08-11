@@ -168,7 +168,7 @@ const contentSchema = Joi.object({
   title: Joi.string().min(5).max(50).required(),
   description: Joi.string().min(10).max(300).required(),
   category: Joi.string().valid('art', 'photography', 'video', 'text', 'other'),
-  difficulty: Joi.string().valid('easy', 'medium', 'hard'),
+
   isAI: Joi.string().valid('true', 'false').required(),
   // tags 필드 수정 - 더 유연하게 처리
   tags: Joi.any().optional()
@@ -177,7 +177,7 @@ const contentSchema = Joi.object({
 // Get all approved content (public)
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, difficulty } = req.query;
+    const { page = 1, limit = 10, category } = req.query;
     
     const filter = { 
       status: 'approved', 
@@ -185,7 +185,7 @@ router.get('/', async (req, res) => {
     };
     
     if (category) filter.category = category;
-    if (difficulty) filter.difficulty = difficulty;
+  
 
     const contents = await Content.find(filter)
       .populate('uploadedBy', 'username')
@@ -302,8 +302,8 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     }
 
     // 5. 데이터 추출 및 안전한 처리
-    const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
-    console.log('Extracted data:', { title, description, category, difficulty, isAI });
+      const { title, description, category, tags, isAI, isRequestedReview } = req.body;
+  console.log('Extracted data:', { title, description, category, isAI });
 
     // 6. 미디어 타입 결정
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'video';
@@ -373,7 +373,6 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
       mediaType,
       category: category || 'other',
       tags: tagsArray,
-      difficulty: difficulty || 'medium',
       isAI: isAIBoolean,
       isRequestedReview: String(isRequestedReview) === 'true',
       uploadedBy: uploadedBy,
@@ -739,13 +738,12 @@ router.post('/analyze', auth, async (req, res) => {
     
     // TODO: 실제 AI API 연동 필요
     // 현재는 텍스트 기반 간단한 분석 로직 (목업)
-    let predictedDifficulty = 'medium';
     let predictedAccuracy = 50;
     
     if (text) {
       const textLower = text.toLowerCase();
       
-      // 키워드 기반 난이도 분석 (임시)
+      // 키워드 기반 정답률 예측 (임시)
       const easyKeywords = ['쉬운', '간단한', '명확한', '분명한', '뚜렷한'];
       const hardKeywords = ['복잡한', '어려운', '모호한', '애매한', '추상적인', '세밀한'];
       
@@ -753,13 +751,10 @@ router.post('/analyze', auth, async (req, res) => {
       const hardCount = hardKeywords.filter(keyword => textLower.includes(keyword)).length;
       
       if (easyCount > hardCount) {
-        predictedDifficulty = 'easy';
         predictedAccuracy = 70 + Math.floor(Math.random() * 20); // 70-90%
       } else if (hardCount > easyCount) {
-        predictedDifficulty = 'hard';
         predictedAccuracy = 30 + Math.floor(Math.random() * 30); // 30-60%
       } else {
-        predictedDifficulty = 'medium';
         predictedAccuracy = 50 + Math.floor(Math.random() * 20); // 50-70%
       }
     }
@@ -770,11 +765,11 @@ router.post('/analyze', auth, async (req, res) => {
       // 실제 구현 시:
       // 1. 이미지를 AI 서비스로 전송
       // 2. 이미지 내용 분석 (객체, 텍스트, 품질 등)
-      // 3. 분석 결과를 바탕으로 난이도 예측
+      // 3. 분석 결과를 바탕으로 정답률 예측
       console.log('이미지 분석 필요:', imageUrl);
     }
     
-    res.json({ predictedDifficulty, predictedAccuracy });
+    res.json({ predictedAccuracy });
   } catch (err) {
     res.status(500).json({ error: 'AI 분석 오류' });
   }
@@ -940,7 +935,7 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ error: '수정 권한이 없습니다.' });
     }
 
-    const { title, description, category, tags, difficulty, isAI, isRequestedReview } = req.body;
+    const { title, description, category, tags, isAI, isRequestedReview } = req.body;
     
     // 태그 처리
     const tagsArray = processTags(tags);
@@ -952,7 +947,6 @@ router.put('/:id', auth, async (req, res) => {
         description: description.trim(),
         category: category || 'other',
         tags: tagsArray,
-        difficulty: difficulty || 'medium',
         isAI: String(isAI) === 'true',
         isRequestedReview: String(isRequestedReview) === 'true'
       },
@@ -962,6 +956,43 @@ router.put('/:id', auth, async (req, res) => {
     res.json({ content: updatedContent });
   } catch (err) {
     res.status(500).json({ error: '콘텐츠 수정 실패' });
+  }
+});
+
+// 정답 공개 (업로더만)
+router.patch('/:id/reveal', auth, async (req, res) => {
+  try {
+    const content = await Content.findById(req.params.id);
+    if (!content) {
+      return res.status(404).json({ error: '콘텐츠를 찾을 수 없습니다.' });
+    }
+
+    // 업로더만 정답 공개 가능
+    if (content.uploadedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: '정답 공개 권한이 없습니다.' });
+    }
+
+    // 이미 공개된 경우
+    if (content.isAnswerRevealed) {
+      return res.status(400).json({ error: '이미 정답이 공개되었습니다.' });
+    }
+
+    const updatedContent = await Content.findByIdAndUpdate(
+      req.params.id,
+      {
+        isAnswerRevealed: true,
+        revealDate: new Date()
+      },
+      { new: true }
+    );
+
+    res.json({ 
+      message: '정답이 공개되었습니다.',
+      content: updatedContent 
+    });
+  } catch (err) {
+    console.error('Reveal answer error:', err);
+    res.status(500).json({ error: '정답 공개 실패' });
   }
 });
 

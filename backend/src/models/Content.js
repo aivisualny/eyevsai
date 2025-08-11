@@ -71,11 +71,7 @@ const contentSchema = new mongoose.Schema({
     },
     default: []
   },
-  difficulty: {
-    type: String,
-    enum: ['easy', 'medium', 'hard'],
-    default: 'medium'
-  },
+
   views: {
     type: Number,
     default: 0

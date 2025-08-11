@@ -145,15 +145,25 @@ export default function VotePage() {
                 <h3 className="font-semibold text-lg mb-2 line-clamp-2">{content.title}</h3>
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">{content.description}</p>
                 
-                {/* 카테고리 및 난이도 */}
-                <div className="flex gap-2 mb-3">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                    {content.category}
-                  </span>
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                    {content.difficulty}
-                  </span>
-                </div>
+                                 {/* 카테고리 및 태그 */}
+                 <div className="flex flex-wrap gap-2 mb-3">
+                   <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                     {content.category}
+                   </span>
+                   {/* 태그 표시 */}
+                   {content.tags && content.tags.length > 0 && (
+                     content.tags.slice(0, 3).map((tag: string, index: number) => (
+                       <span key={index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                         #{tag}
+                       </span>
+                     ))
+                   )}
+                   {content.tags && content.tags.length > 3 && (
+                     <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                       +{content.tags.length - 3}
+                     </span>
+                   )}
+                 </div>
 
                 {/* 참여 정보 */}
                 <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">

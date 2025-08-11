@@ -247,6 +247,30 @@ export default function MyPage() {
     }
   };
 
+  const handleDeleteContent = async (contentId: string) => {
+    try {
+      await deleteContent(contentId);
+      // 콘텐츠 목록 새로고침
+      const data = await getMyContent();
+      setMyContents(data.contents);
+      alert('콘텐츠가 삭제되었습니다.');
+    } catch (error: any) {
+      alert(error.response?.data?.error || '콘텐츠 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleRevealAnswer = async (contentId: string) => {
+    try {
+      await revealAnswer(contentId);
+      // 콘텐츠 목록 새로고침
+      const data = await getMyContent();
+      setMyContents(data.contents);
+      alert('정답이 공개되었습니다.');
+    } catch (error: any) {
+      alert(error.response?.data?.error || '정답 공개에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
@@ -631,17 +655,39 @@ export default function MyPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-600 border-red-300 hover:bg-red-50"
                           onClick={() => {
                             if (confirm('정말로 이 콘텐츠를 삭제하시겠습니까?')) {
-                              // 삭제 기능은 나중에 구현
-                              alert('삭제 기능은 준비 중입니다.');
+                              handleDeleteContent(content._id);
                             }
                           }}
+                          className="text-red-600 border-red-300 hover:bg-red-50"
                         >
                           삭제
                         </Button>
                       </div>
+                      
+                      {/* 마감 관리 */}
+                      {!content.isAnswerRevealed && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-500">
+                              마감일: {content.revealDate ? new Date(content.revealDate).toLocaleDateString('ko-KR') : '미설정'}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm('정답을 지금 공개하시겠습니까?')) {
+                                  handleRevealAnswer(content._id);
+                                }
+                              }}
+                              className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                            >
+                              정답 공개
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                   {myContents.length === 0 && (

@@ -15,12 +15,12 @@ export default function UploadPage() {
     title: '',
     description: '',
     category: 'other',
-    difficulty: 'medium',
     tags: [],
     isAI: 'false',
     isRequestedReview: false
   });
   const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [filePreview, setFilePreview] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [aiAnalysis, setAiAnalysis] = useState<any>(null);
   const [analyzing, setAnalyzing] = useState<boolean>(false);
@@ -56,6 +56,13 @@ export default function UploadPage() {
       }
       setSelectedFile(file);
       setError('');
+      
+      // 파일 미리보기 생성
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFilePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -88,7 +95,6 @@ export default function UploadPage() {
       uploadFormData.append('title', formData.title);
       uploadFormData.append('description', formData.description);
       uploadFormData.append('category', formData.category);
-      uploadFormData.append('difficulty', formData.difficulty);
       
       // 태그 처리 개선
       if (formData.tags && formData.tags.length > 0) {
@@ -246,65 +252,22 @@ export default function UploadPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  카테고리
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="art">아트</option>
-                  <option value="photography">사진</option>
-                  <option value="video">비디오</option>
-                  <option value="text">텍스트</option>
-                  <option value="other">기타</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  난이도
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="difficulty"
-                      value="easy"
-                      checked={formData.difficulty === 'easy'}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    쉬움
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="difficulty"
-                      value="medium"
-                      checked={formData.difficulty === 'medium'}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    보통
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="difficulty"
-                      value="hard"
-                      checked={formData.difficulty === 'hard'}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    어려움
-                  </label>
-                </div>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                카테고리
+              </label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="art">아트</option>
+                <option value="photography">사진</option>
+                <option value="video">비디오</option>
+                <option value="text">텍스트</option>
+                <option value="other">기타</option>
+              </select>
             </div>
 
             <div>
@@ -331,7 +294,7 @@ export default function UploadPage() {
                     value="true"
                     checked={formData.isAI === 'true'}
                     onChange={handleChange}
-                    className="mr-2"
+                    className="mr-2 text-blue-600 focus:ring-blue-500"
                   />
                   AI 생성 콘텐츠
                 </label>
@@ -342,7 +305,7 @@ export default function UploadPage() {
                     value="false"
                     checked={formData.isAI === 'false'}
                     onChange={handleChange}
-                    className="mr-2"
+                    className="mr-2 text-blue-600 focus:ring-blue-500"
                   />
                   실제 콘텐츠
                 </label>
@@ -380,26 +343,41 @@ export default function UploadPage() {
                 required
               />
               {selectedFile && (
-                <p className="mt-2 text-sm text-gray-600">
-                  선택된 파일: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)}MB)
-                </p>
+                <div className="mt-3">
+                  <p className="text-sm text-gray-600 mb-2">
+                    선택된 파일: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)}MB)
+                  </p>
+                  
+                  {/* 파일 미리보기 */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    {filePreview && (
+                      selectedFile.type.startsWith('image/') ? (
+                        <img
+                          src={filePreview}
+                          alt="미리보기"
+                          className="w-full max-h-64 object-contain bg-gray-50"
+                        />
+                      ) : (
+                        <video
+                          src={filePreview}
+                          controls
+                          className="w-full max-h-64 object-contain bg-gray-50"
+                        />
+                      )
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 
-            {/* AI 난이도 분석 결과 표시 */}
+            {/* AI 정답률 분석 결과 표시 */}
             {(analyzing || aiAnalysis) && (
               <div className="bg-blue-50 border border-blue-200 rounded px-4 py-3 mb-2 flex items-center gap-4">
                 {analyzing ? (
                   <span className="text-blue-600 text-sm">AI 분석 중...</span>
                 ) : aiAnalysis && (
                   <>
-                    <span className="text-blue-700 font-semibold">예상 난이도:</span>
-                    <span className="font-bold text-lg">
-                      {aiAnalysis.predictedDifficulty === 'easy' && '쉬움'}
-                      {aiAnalysis.predictedDifficulty === 'normal' && '보통'}
-                      {aiAnalysis.predictedDifficulty === 'hard' && '어려움'}
-                    </span>
-                    <span className="text-blue-700 font-semibold ml-4">예상 정답률:</span>
+                    <span className="text-blue-700 font-semibold">예상 정답률:</span>
                     <span className="font-bold text-lg">{aiAnalysis.predictedAccuracy}%</span>
                   </>
                 )}
