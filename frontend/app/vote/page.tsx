@@ -182,15 +182,15 @@ export default function VotePage() {
                       <span className="text-green-600 font-bold text-sm">Real</span>
                       <span className="text-gray-500 text-xs">결과</span>
                     </div>
-                    <div className="flex w-full h-6 rounded overflow-hidden text-xs font-semibold">
+                    <div className="flex w-full h-8 rounded overflow-hidden text-xs font-semibold">
                       <div 
-                        className="bg-green-100 text-green-700 flex items-center justify-center min-w-0" 
+                        className="bg-green-100 text-green-700 flex items-center justify-center min-w-0 px-1" 
                         style={{ width: `${Math.round((content.votes?.real || 0) / content.totalVotes * 100)}%` }}
                       >
                         {Math.round((content.votes?.real || 0) / content.totalVotes * 100)}%
                       </div>
                       <div 
-                        className="bg-red-100 text-red-700 flex items-center justify-center min-w-0" 
+                        className="bg-red-100 text-red-700 flex items-center justify-center min-w-0 px-1" 
                         style={{ width: `${Math.round((content.votes?.ai || 0) / content.totalVotes * 100)}%` }}
                       >
                         {Math.round((content.votes?.ai || 0) / content.totalVotes * 100)}%

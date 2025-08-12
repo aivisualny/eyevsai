@@ -216,7 +216,6 @@ contentSchema.methods.calculateDifficulty = function() {
 
 // Update calculated difficulty and accuracy
 contentSchema.methods.updateCalculatedStats = function() {
-  this.accuracyRate = this.calculateAccuracyRate();
   this.calculatedDifficulty = this.calculateDifficulty();
   return this.save();
 };
