@@ -5,6 +5,7 @@ const Comment = require('../models/Comment');
 const CommentLike = require('../models/CommentLike');
 const Report = require('../models/Report');
 const WrongVote = require('../models/WrongVote');
+const User = require('../models/User');
 require('dotenv').config();
 
 const clearContent = async () => {
@@ -34,8 +35,22 @@ const clearContent = async () => {
     const wrongVoteResult = await WrongVote.deleteMany({});
     console.log(`✅ ${wrongVoteResult.deletedCount}개의 오답 로그 삭제 완료`);
 
+    // 사용자 투표 통계 초기화
+    const userUpdateResult = await User.updateMany({}, {
+      $set: {
+        totalVotes: 0,
+        correctVotes: 0,
+        points: 0,
+        consecutiveCorrect: 0,
+        maxConsecutiveCorrect: 0,
+        accuracyHistory: []
+      }
+    });
+    console.log(`✅ ${userUpdateResult.modifiedCount}명의 사용자 투표 통계 초기화 완료`);
+
     console.log('🎉 콘텐츠 데이터 초기화 완료!');
-    console.log('👥 사용자 정보는 유지되었습니다.');
+    console.log('👥 사용자 계정 정보는 유지되었습니다.');
+    console.log('📊 사용자 투표 통계는 초기화되었습니다.');
   } catch (error) {
     console.error('❌ 콘텐츠 데이터 초기화 실패:', error);
   } finally {
