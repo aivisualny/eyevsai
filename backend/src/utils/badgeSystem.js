@@ -6,7 +6,11 @@ class BadgeSystem {
   static async checkAndAwardBadges(userId) {
     try {
       const user = await User.findById(userId).populate('badges.badge');
-      const earnedBadgeIds = user.badges.map(b => b.badge._id.toString());
+      
+      // 뱃지가 없는 경우 빈 배열로 처리
+      const earnedBadgeIds = user.badges && user.badges.length > 0 
+        ? user.badges.map(b => b.badge && b.badge._id ? b.badge._id.toString() : null).filter(id => id !== null)
+        : [];
       
       // 모든 활성 뱃지 가져오기
       const allBadges = await Badge.find({ isActive: true });
