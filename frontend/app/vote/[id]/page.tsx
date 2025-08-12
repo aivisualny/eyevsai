@@ -249,9 +249,11 @@ export default function VotePage() {
                 <h3 className="text-lg font-semibold text-blue-800 mb-2">
                   투표 완료!
                 </h3>
-                <p className="text-blue-700 mb-2">
-                  {voteResult.isCorrect ? '🎉 정답입니다!' : '❌ 틀렸습니다.'}
-                </p>
+                {!content.isRequestedReview && (
+                  <p className="text-blue-700 mb-2">
+                    {voteResult.isCorrect ? '🎉 정답입니다!' : '❌ 틀렸습니다.'}
+                  </p>
+                )}
                 <p className="text-sm text-blue-600">
                   획득 포인트: +{voteResult.pointsEarned}pt
                 </p>

@@ -135,15 +135,17 @@ export default function VotePage() {
                     🔁 재투표
                   </span>
                 )}
-                {content.isRequestedReview && (
-                  <span className="absolute top-2 right-2 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded font-semibold shadow">
-                    🔍 감별 요청
-                  </span>
-                )}
               </div>
               
               <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2">{content.title}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="font-semibold text-lg line-clamp-2">{content.title}</h3>
+                  {content.isRequestedReview && (
+                    <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded font-semibold shadow">
+                      🔍 감별 요청
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">{content.description}</p>
                 
                                  {/* 카테고리 및 태그 */}

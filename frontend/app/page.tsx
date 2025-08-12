@@ -196,12 +196,14 @@ export default function HomePage() {
                         {c.isRecycled && (
                           <span className="absolute top-1 left-1 bg-pink-100 text-pink-600 text-xs px-2 py-0.5 rounded font-semibold shadow">🔁 재투표</span>
                         )}
-                        {c.isRequestedReview && (
-                          <span className="absolute top-1 right-1 bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded font-semibold shadow">🔍 감별 요청</span>
-                        )}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-sm truncate">{c.title}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-sm truncate">{c.title}</h3>
+                          {c.isRequestedReview && (
+                            <span className="bg-yellow-100 text-yellow-700 text-xs px-1 py-0.5 rounded font-semibold shadow">🔍 감별 요청</span>
+                          )}
+                        </div>
                         <div className="text-xs text-gray-500">{c.totalVotes || 0}명 참여</div>
                       </div>
                       <div className="text-right">
@@ -271,7 +273,7 @@ export default function HomePage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredContents(tab, contents).map((c: any) => (
-                      <div key={c._id} className="rounded-xl border shadow-lg p-4 bg-white hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer">
+                      <div key={c._id} className="rounded-xl border shadow-lg p-4 bg-white hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer" onClick={() => window.location.href = `/vote/${c._id}`}>
                         <div className="relative mb-3 group">
                           <img src={c.mediaUrl.startsWith('data:') ? c.mediaUrl : c.mediaUrl.startsWith('http') ? c.mediaUrl : `https://eyevsai.onrender.com${c.mediaUrl}`} alt={c.title} className="rounded-lg w-full h-48 object-cover group-hover:scale-105 group-hover:shadow-xl transition-transform duration-200" />
                           {c.status === 'closed' && <span className="absolute top-2 right-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">마감됨</span>}
@@ -279,11 +281,13 @@ export default function HomePage() {
                           {c.isRecycled && (
                             <span className="absolute top-2 left-2 bg-pink-100 text-pink-600 text-xs px-2 py-1 rounded font-semibold shadow">♻️ 재투표</span>
                           )}
+                        </div>
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="text-lg font-semibold truncate">{c.title}</h3>
                           {c.isRequestedReview && (
-                            <span className="absolute top-2 right-2 bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded font-semibold shadow">🔍 감별 요청</span>
+                            <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded font-semibold shadow">🔍 감별 요청</span>
                           )}
                         </div>
-                        <h3 className="text-lg font-semibold mb-1 truncate">{c.title}</h3>
                         <p className="text-gray-500 text-sm mb-2 line-clamp-2">{c.description}</p>
                         <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
                           <span>{c.status === 'closed' ? '마감됨' : '진행중'}</span>

@@ -36,6 +36,11 @@ router.post('/', auth, async (req, res) => {
       return res.status(404).json({ error: '투표할 수 없는 콘텐츠입니다.' });
     }
 
+    // 자신의 게시물에 투표 방지
+    if (content.user.toString() === req.user._id.toString()) {
+      return res.status(400).json({ error: '자신의 게시물에는 투표할 수 없습니다.' });
+    }
+
     // 정답 여부 확인 (감별의뢰는 정답에 카운트하지 않음)
     const isCorrect = content.isRequestedReview ? false : vote === (content.isAI ? 'ai' : 'real');
     const pointsEarned = isCorrect ? 10 : 1; // 정답: 10점, 오답: 1점
