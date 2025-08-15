@@ -72,7 +72,7 @@ class BadgeSystem {
       case 'uploadCount':
         // Content 모델에서 사용자가 업로드한 콘텐츠 수 계산
         const Content = require('../models/Content');
-        userValue = await Content.countDocuments({ uploader: user._id });
+        userValue = await Content.countDocuments({ uploadedBy: user._id });
         break;
       case 'points':
         userValue = user.points;

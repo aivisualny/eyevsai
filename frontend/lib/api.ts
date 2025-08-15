@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'https://eyevsai.onrender.com/api';
+const API_BASE = 'http://localhost:5001/api';
 
 // Axios 인터셉터 설정
 axios.interceptors.response.use(

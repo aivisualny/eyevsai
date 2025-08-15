@@ -217,7 +217,8 @@ contentSchema.methods.calculateDifficulty = function() {
 // Update calculated difficulty and accuracy
 contentSchema.methods.updateCalculatedStats = function() {
   this.calculatedDifficulty = this.calculateDifficulty();
-  return this.save();
+  this.accuracyRate = this.calculateAccuracyRate();
+  return Promise.resolve(this);
 };
 
 // Check if content should be auto-extended (자동 연장 체크)
@@ -239,7 +240,6 @@ contentSchema.methods.autoExtend = function() {
     this.scheduledRevealDate = newDate;
     this.autoExtended = true;
     this.extensionCount += 1;
-    return this.save();
   }
   return Promise.resolve(this);
 };

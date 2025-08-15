@@ -70,6 +70,8 @@ export default function VotePage() {
         setShowBadgeAlert(true);
       }
     } catch (error: any) {
+      console.error('투표 오류:', error);
+      console.error('오류 응답:', error.response);
       setError(error.response?.data?.error || '투표에 실패했습니다.');
     } finally {
       setVoting(false);
