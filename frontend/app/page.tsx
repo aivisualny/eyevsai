@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getContents, getMe, getRanking, getMyBadges, getGlobalStats, isTokenValid } from '../lib/api';
+import { getContents, getMe, getRanking, getMyBadges, getGlobalStats, isTokenValid, refreshTokenIfNeeded } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -40,21 +40,25 @@ export default function HomePage() {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token && isTokenValid()) {
-        const [userData, badgesData] = await Promise.all([
-          getMe(),
-          getMyBadges().catch(() => ({ badges: [] }))
-        ]);
-        setUser(userData.user);
-        setUserBadges(badgesData.badges || []);
-      } else {
-        // 유효하지 않은 토큰 제거
-        if (token) {
+      if (token) {
+        // 먼저 토큰 갱신 시도
+        const tokenRefreshed = await refreshTokenIfNeeded();
+        
+        if (tokenRefreshed && isTokenValid()) {
+          const [userData, badgesData] = await Promise.all([
+            getMe(),
+            getMyBadges().catch(() => ({ badges: [] }))
+          ]);
+          setUser(userData.user);
+          setUserBadges(badgesData.badges || []);
+        } else {
+          // 유효하지 않은 토큰 제거
           localStorage.removeItem('token');
           localStorage.removeItem('user');
         }
       }
     } catch (error: any) {
+      console.error('인증 체크 오류:', error);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     }

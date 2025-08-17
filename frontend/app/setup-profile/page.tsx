@@ -88,9 +88,22 @@ export default function SetupProfilePage() {
 
     try {
       await setupProfile(username);
-      // 성공 시 메인 페이지로 이동
+      
+      // 성공 메시지 표시 후 메인 페이지로 이동
+      alert('닉네임 설정이 완료되었습니다!');
+      
+      // router.push를 사용하여 더 안정적인 네비게이션
       router.push('/');
+      
+      // 백업으로 window.location.href 사용
+      setTimeout(() => {
+        if (window.location.pathname !== '/') {
+          window.location.href = '/';
+        }
+      }, 1000);
+      
     } catch (error: any) {
+      console.error('닉네임 설정 오류:', error);
       setError(error.response?.data?.error || '닉네임 설정에 실패했습니다.');
     } finally {
       setIsLoading(false);
