@@ -119,44 +119,29 @@ export default function SocialSignupPage() {
     setError('');
 
     try {
+      console.log('회원가입 시작:', { token: token?.substring(0, 20) + '...', username });
+      
       const response = await socialSignup(token!, username);
+      console.log('회원가입 성공:', response);
       
       // 토큰과 사용자 정보를 로컬 스토리지에 저장
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
+      console.log('로컬 스토리지 저장 완료');
+      
       // 성공 메시지 표시
       alert('회원가입이 완료되었습니다!');
       
-      // 여러 방법으로 리다이렉트 시도
-      try {
-        // 1. router.push 시도
-        router.push('/');
-        
-        // 2. 1초 후에도 페이지가 변경되지 않으면 window.location.href 사용
-        setTimeout(() => {
-          if (window.location.pathname !== '/') {
-            console.log('router.push 실패, window.location.href 사용');
-            window.location.href = '/';
-          }
-        }, 1000);
-        
-        // 3. 2초 후에도 안되면 강제 새로고침
-        setTimeout(() => {
-          if (window.location.pathname !== '/') {
-            console.log('강제 새로고침 시도');
-            window.location.replace('/');
-          }
-        }, 2000);
-        
-      } catch (redirectError) {
-        console.error('리다이렉트 오류:', redirectError);
-        // 최후의 수단으로 window.location.href 사용
-        window.location.href = '/';
-      }
+      // 즉시 메인 페이지로 강제 이동
+      console.log('메인 페이지로 이동 시작');
+      
+      // window.location.href를 사용하여 강제 이동
+      window.location.href = '/';
       
     } catch (error: any) {
       console.error('회원가입 오류:', error);
+      console.error('오류 상세:', error.response?.data);
       setError(error.response?.data?.error || '회원가입에 실패했습니다.');
     } finally {
       setIsLoading(false);
