@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://eyevsai.onrender.com/api';
+const API_BASE = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5003/api'
+  : (process.env.NEXT_PUBLIC_API_URL || 'https://eyevsai.onrender.com/api');
 
 // Axios 인터셉터 설정 - 무한 리다이렉트 방지
 let isRedirecting = false;
