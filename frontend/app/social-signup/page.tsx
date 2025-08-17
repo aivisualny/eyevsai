@@ -67,7 +67,8 @@ export default function SocialSignupPage() {
   // 사용자명 중복 확인
   const checkUsernameAvailability = async (username: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://eyevsai.onrender.com'}/api/auth/check-username/${username}`);
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://eyevsai.onrender.com/api';
+      const response = await fetch(`${API_BASE}/auth/check-username/${username}`);
       const data = await response.json();
       
       if (data.available) {
@@ -108,18 +109,35 @@ export default function SocialSignupPage() {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
-      // 성공 메시지 표시 후 메인 페이지로 이동
+      // 성공 메시지 표시
       alert('회원가입이 완료되었습니다!');
       
-      // router.push를 사용하여 더 안정적인 네비게이션
-      router.push('/');
-      
-      // 백업으로 window.location.href 사용
-      setTimeout(() => {
-        if (window.location.pathname !== '/') {
-          window.location.href = '/';
-        }
-      }, 1000);
+      // 여러 방법으로 리다이렉트 시도
+      try {
+        // 1. router.push 시도
+        router.push('/');
+        
+        // 2. 1초 후에도 페이지가 변경되지 않으면 window.location.href 사용
+        setTimeout(() => {
+          if (window.location.pathname !== '/') {
+            console.log('router.push 실패, window.location.href 사용');
+            window.location.href = '/';
+          }
+        }, 1000);
+        
+        // 3. 2초 후에도 안되면 강제 새로고침
+        setTimeout(() => {
+          if (window.location.pathname !== '/') {
+            console.log('강제 새로고침 시도');
+            window.location.replace('/');
+          }
+        }, 2000);
+        
+      } catch (redirectError) {
+        console.error('리다이렉트 오류:', redirectError);
+        // 최후의 수단으로 window.location.href 사용
+        window.location.href = '/';
+      }
       
     } catch (error: any) {
       console.error('회원가입 오류:', error);

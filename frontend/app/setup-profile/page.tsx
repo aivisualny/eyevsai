@@ -89,18 +89,35 @@ export default function SetupProfilePage() {
     try {
       await setupProfile(username);
       
-      // 성공 메시지 표시 후 메인 페이지로 이동
+      // 성공 메시지 표시
       alert('닉네임 설정이 완료되었습니다!');
       
-      // router.push를 사용하여 더 안정적인 네비게이션
-      router.push('/');
-      
-      // 백업으로 window.location.href 사용
-      setTimeout(() => {
-        if (window.location.pathname !== '/') {
-          window.location.href = '/';
-        }
-      }, 1000);
+      // 여러 방법으로 리다이렉트 시도
+      try {
+        // 1. router.push 시도
+        router.push('/');
+        
+        // 2. 1초 후에도 페이지가 변경되지 않으면 window.location.href 사용
+        setTimeout(() => {
+          if (window.location.pathname !== '/') {
+            console.log('router.push 실패, window.location.href 사용');
+            window.location.href = '/';
+          }
+        }, 1000);
+        
+        // 3. 2초 후에도 안되면 강제 새로고침
+        setTimeout(() => {
+          if (window.location.pathname !== '/') {
+            console.log('강제 새로고침 시도');
+            window.location.replace('/');
+          }
+        }, 2000);
+        
+      } catch (redirectError) {
+        console.error('리다이렉트 오류:', redirectError);
+        // 최후의 수단으로 window.location.href 사용
+        window.location.href = '/';
+      }
       
     } catch (error: any) {
       console.error('닉네임 설정 오류:', error);
