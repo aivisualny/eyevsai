@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { uploadContent, getMe, analyzeContentAI, isTokenValid } from '../../lib/api';
+import { uploadContent, getMe, analyzeContentAI, isTokenValid, refreshTokenIfNeeded } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
