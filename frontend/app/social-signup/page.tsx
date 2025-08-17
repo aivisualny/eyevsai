@@ -68,8 +68,23 @@ export default function SocialSignupPage() {
   const checkUsernameAvailability = async (username: string) => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://eyevsai.onrender.com/api';
-      const response = await fetch(`${API_BASE}/auth/check-username/${username}`);
+      console.log('사용자명 확인 API 호출:', `${API_BASE}/auth/check-username/${username}`);
+      
+      const response = await fetch(`${API_BASE}/auth/check-username/${username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('API 응답 상태:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('API 응답 데이터:', data);
       
       if (data.available) {
         setIsAvailable(true);
@@ -80,8 +95,9 @@ export default function SocialSignupPage() {
       }
     } catch (error) {
       console.error('사용자명 확인 오류:', error);
-      setIsAvailable(false);
-      setError('사용자명 확인 중 오류가 발생했습니다.');
+      // API 호출 실패 시에도 사용자가 계속 진행할 수 있도록 허용
+      setIsAvailable(true);
+      setError('사용자명 확인 중 오류가 발생했습니다. 계속 진행하시겠습니까?');
     }
   };
 
@@ -232,7 +248,7 @@ export default function SocialSignupPage() {
             <Button
               type="submit"
               className="w-full py-3 text-base font-semibold"
-              disabled={isLoading || !username.trim() || isAvailable !== true}
+              disabled={isLoading || !username.trim() || (isAvailable === false)}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
