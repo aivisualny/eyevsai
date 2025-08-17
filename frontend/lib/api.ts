@@ -438,6 +438,28 @@ export async function setupProfile(username: string) {
 
 // 소셜 회원가입 완료
 export async function socialSignup(token: string, username: string) {
-  const res = await axios.post(`${API_BASE}/auth/social-signup`, { token, username });
-  return res.data;
+  console.log('=== socialSignup 함수 시작 ===');
+  console.log('API_BASE:', API_BASE);
+  console.log('토큰 길이:', token.length);
+  console.log('사용자명:', username);
+  
+  try {
+    const requestData = { token, username };
+    console.log('요청 데이터:', requestData);
+    
+    const res = await axios.post(`${API_BASE}/auth/social-signup`, requestData);
+    console.log('=== socialSignup 성공 ===');
+    console.log('응답 상태:', res.status);
+    console.log('응답 데이터:', res.data);
+    
+    return res.data;
+  } catch (error: any) {
+    console.error('=== socialSignup 오류 ===');
+    console.error('오류 객체:', error);
+    console.error('오류 메시지:', error.message);
+    console.error('오류 응답:', error.response);
+    console.error('오류 응답 데이터:', error.response?.data);
+    console.error('오류 상태:', error.response?.status);
+    throw error;
+  }
 } 

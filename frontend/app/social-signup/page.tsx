@@ -119,30 +119,68 @@ export default function SocialSignupPage() {
     setError('');
 
     try {
-      console.log('회원가입 시작:', { token: token?.substring(0, 20) + '...', username });
+      console.log('=== 회원가입 시작 ===');
+      console.log('토큰:', token?.substring(0, 20) + '...');
+      console.log('사용자명:', username);
+      console.log('API_BASE:', process.env.NEXT_PUBLIC_API_URL || 'https://eyevsai.onrender.com/api');
       
       const response = await socialSignup(token!, username);
-      console.log('회원가입 성공:', response);
+      console.log('=== 회원가입 성공 ===');
+      console.log('응답:', response);
       
       // 토큰과 사용자 정보를 로컬 스토리지에 저장
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
       console.log('로컬 스토리지 저장 완료');
+      console.log('저장된 토큰:', localStorage.getItem('token')?.substring(0, 20) + '...');
+      console.log('저장된 사용자:', localStorage.getItem('user'));
       
       // 성공 메시지 표시
       alert('회원가입이 완료되었습니다!');
       
       // 즉시 메인 페이지로 강제 이동
-      console.log('메인 페이지로 이동 시작');
+      console.log('=== 메인 페이지로 이동 시작 ===');
+      console.log('현재 URL:', window.location.href);
       
-      // window.location.href를 사용하여 강제 이동
-      window.location.href = '/';
+      // 여러 방법으로 리다이렉트 시도
+      try {
+        // 1. window.location.replace 사용
+        console.log('window.location.replace 시도');
+        window.location.replace('/');
+      } catch (replaceError) {
+        console.error('window.location.replace 실패:', replaceError);
+        
+        try {
+          // 2. window.location.href 사용
+          console.log('window.location.href 시도');
+          window.location.href = '/';
+        } catch (hrefError) {
+          console.error('window.location.href 실패:', hrefError);
+          
+          // 3. router.push 사용
+          console.log('router.push 시도');
+          router.push('/');
+        }
+      }
       
     } catch (error: any) {
-      console.error('회원가입 오류:', error);
-      console.error('오류 상세:', error.response?.data);
-      setError(error.response?.data?.error || '회원가입에 실패했습니다.');
+      console.error('=== 회원가입 오류 ===');
+      console.error('오류 객체:', error);
+      console.error('오류 메시지:', error.message);
+      console.error('오류 응답:', error.response);
+      console.error('오류 응답 데이터:', error.response?.data);
+      console.error('오류 상태:', error.response?.status);
+      
+      if (error.response?.status === 400) {
+        setError(error.response.data.error || '잘못된 요청입니다.');
+      } else if (error.response?.status === 500) {
+        setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      } else if (error.message.includes('fetch')) {
+        setError('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
+      } else {
+        setError(error.response?.data?.error || '회원가입에 실패했습니다.');
+      }
     } finally {
       setIsLoading(false);
     }
