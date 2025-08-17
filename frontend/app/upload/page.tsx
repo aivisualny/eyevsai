@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { uploadContent, getMe, analyzeContentAI } from '../../lib/api';
+import { uploadContent, getMe, analyzeContentAI, isTokenValid } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
@@ -31,6 +31,17 @@ export default function UploadPage() {
 
   const checkAuth = async () => {
     try {
+      // 먼저 토큰 갱신 시도
+      const tokenRefreshed = await refreshTokenIfNeeded();
+      
+      if (!tokenRefreshed) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        alert('로그인이 필요합니다.');
+        window.location.href = '/login';
+        return;
+      }
+
       const token = localStorage.getItem('token');
       if (!token) {
         alert('로그인이 필요합니다.');

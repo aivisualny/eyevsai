@@ -570,9 +570,23 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // Refresh token
-router.post('/refresh-token', auth, async (req, res) => {
+router.post('/refresh-token', async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    // 토큰 검증 (만료된 토큰도 허용)
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await User.findById(decoded.userId).select('-password');
     if (!user || !user.isActive) {
       return res.status(401).json({ error: 'User not found or inactive' });
     }

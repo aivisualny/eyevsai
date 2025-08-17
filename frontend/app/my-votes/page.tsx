@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getMyVotes, getMe } from '../../lib/api';
+import { getMyVotes, getMe, isTokenValid } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 
@@ -17,6 +17,15 @@ export default function MyVotesPage() {
 
   const checkAuth = async () => {
     try {
+      // 먼저 토큰 유효성 검사
+      if (!isTokenValid()) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        alert('로그인이 필요합니다.');
+        window.location.href = '/login';
+        return;
+      }
+
       const token = localStorage.getItem('token');
       if (!token) {
         alert('로그인이 필요합니다.');

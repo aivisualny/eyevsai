@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getContents, getMe, getRanking, getMyBadges, getGlobalStats } from '../lib/api';
+import { getContents, getMe, getRanking, getMyBadges, getGlobalStats, isTokenValid } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -40,16 +40,23 @@ export default function HomePage() {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token) {
+      if (token && isTokenValid()) {
         const [userData, badgesData] = await Promise.all([
           getMe(),
           getMyBadges().catch(() => ({ badges: [] }))
         ]);
         setUser(userData.user);
         setUserBadges(badgesData.badges || []);
+      } else {
+        // 유효하지 않은 토큰 제거
+        if (token) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       }
     } catch (error: any) {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
   };
 

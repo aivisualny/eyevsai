@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Header from './ui/Header';
+import { isTokenValid } from '../lib/api';
 
 export default function ClientHeader() {
   const [user, setUser] = useState<any>(null);
@@ -9,14 +10,23 @@ export default function ClientHeader() {
   const loadUser = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-    if (token && userStr) {
+    
+    // 토큰 유효성 검사
+    if (token && userStr && isTokenValid()) {
       try {
         setUser(JSON.parse(userStr));
       } catch {
         setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       }
     } else {
       setUser(null);
+      // 유효하지 않은 토큰 제거
+      if (token) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
   };
 

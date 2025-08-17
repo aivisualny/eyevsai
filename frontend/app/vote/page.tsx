@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getContents, getMe } from '../../lib/api';
+import { getContents, getMe, isTokenValid } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 
@@ -35,12 +35,20 @@ export default function VotePage() {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token) {
+      if (token && isTokenValid()) {
         const data = await getMe();
         setUser(data.user);
+      } else {
+        // 유효하지 않은 토큰 제거
+        if (token) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       }
     } catch (error: any) {
       // 로그인하지 않은 상태로도 투표 목록은 볼 수 있음
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
   };
 
