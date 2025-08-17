@@ -9,8 +9,12 @@ axios.interceptors.response.use(
     if (error.response?.status === 401) {
       // 토큰 만료 시 로그인 페이지로 리다이렉트
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+        // 현재 페이지가 이미 로그인 페이지가 아닌 경우에만 리다이렉트
+        if (window.location.pathname !== '/login') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
@@ -38,7 +42,35 @@ export async function login(data: { email: string; password: string }) {
 
 // 내 정보
 export async function getMe() {
-  const res = await axios.get(`${API_BASE}/auth/me`, { headers: getAuthHeaders() });
+  try {
+    const res = await axios.get(`${API_BASE}/auth/me`, { headers: getAuthHeaders() });
+    return res.data;
+  } catch (error: any) {
+    // 토큰이 만료된 경우, 자동으로 토큰 갱신을 시도
+    if (error.response?.status === 401) {
+      console.log('토큰이 만료되었습니다. 자동 갱신을 시도합니다.');
+      try {
+        const refreshRes = await refreshToken();
+        // 새로운 토큰을 localStorage에 저장
+        localStorage.setItem('token', refreshRes.token);
+        localStorage.setItem('user', JSON.stringify(refreshRes.user));
+        
+        // 원래 요청을 다시 시도
+        const retryRes = await axios.get(`${API_BASE}/auth/me`, { headers: getAuthHeaders() });
+        return retryRes.data;
+      } catch (refreshError) {
+        // 토큰 갱신도 실패한 경우
+        console.error('토큰 갱신 실패:', refreshError);
+        throw error; // 원래 오류를 던짐
+      }
+    }
+    throw error;
+  }
+}
+
+// 토큰 갱신
+export async function refreshToken() {
+  const res = await axios.post(`${API_BASE}/auth/refresh-token`, {}, { headers: getAuthHeaders() });
   return res.data;
 }
 

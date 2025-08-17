@@ -22,7 +22,7 @@ const loginSchema = Joi.object({
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '2h' }); // 2시간으로 단축
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' }); // 7일로 연장
 };
 
 // Register
@@ -566,6 +566,37 @@ router.get('/me', auth, async (req, res) => {
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to get user data' });
+  }
+});
+
+// Refresh token
+router.post('/refresh-token', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: 'User not found or inactive' });
+    }
+
+    // 새로운 토큰 생성
+    const newToken = generateToken(user._id);
+
+    res.json({
+      message: 'Token refreshed successfully',
+      token: newToken,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        points: user.points,
+        totalVotes: user.totalVotes,
+        correctVotes: user.correctVotes,
+        accuracy: user.getAccuracy()
+      }
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(500).json({ error: 'Failed to refresh token' });
   }
 });
 

@@ -34,8 +34,17 @@ export default function AdminPage() {
       }
       setUser(data.user);
     } catch (error: any) {
-      alert('로그인이 필요합니다.');
-      window.location.href = '/login';
+      console.error('인증 오류:', error);
+      // 토큰이 유효하지 않은 경우에만 로그인 페이지로 이동
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        alert('로그인이 필요합니다.');
+        window.location.href = '/login';
+      } else {
+        // 네트워크 오류 등 다른 오류의 경우
+        alert('인증 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
     } finally {
       setLoading(false);
     }
