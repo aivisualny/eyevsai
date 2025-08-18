@@ -51,3 +51,45 @@ export function validateImageFile(file: File): { isValid: boolean; error?: strin
 export function generateId(): string {
   return Math.random().toString(36).substr(2, 9)
 } 
+
+// 회원정보 초기화 함수
+export const clearUserData = () => {
+  try {
+    // 로컬 스토리지에서 사용자 관련 데이터 제거
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // 세션 스토리지도 확인하여 제거
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    
+    // 쿠키도 확인하여 제거 (있다면)
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    console.log('사용자 데이터 초기화 완료');
+    return true;
+  } catch (error) {
+    console.error('사용자 데이터 초기화 실패:', error);
+    return false;
+  }
+};
+
+// 토큰 유효성 검사 함수
+export const isTokenValid = (token: string): boolean => {
+  if (!token) return false;
+  
+  try {
+    // JWT 토큰의 만료 시간 확인
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Date.now() / 1000;
+    
+    return payload.exp > currentTime;
+  } catch (error) {
+    console.error('토큰 검증 오류:', error);
+    return false;
+  }
+}; 

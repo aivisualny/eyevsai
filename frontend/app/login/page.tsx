@@ -9,6 +9,7 @@ import { Card } from '../../components/ui/Card';
 import { FaGoogle, FaFacebook } from 'react-icons/fa';
 import { SiKakao } from 'react-icons/si';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { clearUserData } from '../../lib/utils';
 
 function SocialButton({ icon, text, onClick }: { icon: React.ReactNode; text: string; onClick: () => void }) {
   return (
@@ -349,9 +350,22 @@ export default function LoginPage() {
           />
         </div>
         <div className="text-center mt-6">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 mb-4">
             소셜 로그인으로 간편하게 시작하세요
           </p>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('저장된 회원정보를 모두 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                clearUserData();
+                alert('회원정보가 초기화되었습니다.');
+                window.location.reload();
+              }
+            }}
+            className="text-xs text-red-500 hover:text-red-700 underline"
+          >
+            회원정보 초기화
+          </button>
         </div>
       </Card>
     </div>

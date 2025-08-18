@@ -6,6 +6,7 @@ import { socialSignup } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { isTokenValid, clearUserData } from '@/lib/utils';
 
 export default function SocialSignupPage() {
   const router = useRouter();
@@ -22,6 +23,16 @@ export default function SocialSignupPage() {
 
   useEffect(() => {
     if (!token || !userParam) {
+      console.log('토큰 또는 사용자 정보가 없습니다.');
+      router.push('/login');
+      return;
+    }
+
+    // 토큰 유효성 미리 확인
+    if (!isTokenValid(token)) {
+      console.log('토큰이 만료되었습니다.');
+      clearUserData();
+      alert('인증 시간이 만료되었습니다. 다시 로그인해주세요.');
       router.push('/login');
       return;
     }
@@ -31,6 +42,7 @@ export default function SocialSignupPage() {
       setUserInfo(userData);
     } catch (error) {
       console.error('사용자 정보 파싱 오류:', error);
+      clearUserData();
       router.push('/login');
     }
   }, [token, userParam, router]);
@@ -80,7 +92,8 @@ export default function SocialSignupPage() {
       console.log('API 응답 상태:', response.status);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
@@ -93,9 +106,24 @@ export default function SocialSignupPage() {
         setIsAvailable(false);
         setError(data.error || '이미 사용 중인 사용자명입니다.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('사용자명 확인 오류:', error);
-      // API 호출 실패 시에도 사용자가 계속 진행할 수 있도록 허용
+      
+      // 서버 연결 문제인 경우
+      if (error.message.includes('서버 연결') || error.message.includes('503')) {
+        setIsAvailable(false);
+        setError('서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      // 네트워크 오류인 경우
+      if (error.message.includes('fetch') || error.message.includes('network')) {
+        setIsAvailable(false);
+        setError('네트워크 연결을 확인해주세요.');
+        return;
+      }
+      
+      // 기타 오류는 사용자가 계속 진행할 수 있도록 허용
       setIsAvailable(true);
       setError('사용자명 확인 중 오류가 발생했습니다. 계속 진행하시겠습니까?');
     }
@@ -136,33 +164,11 @@ export default function SocialSignupPage() {
       console.log('저장된 토큰:', localStorage.getItem('token')?.substring(0, 20) + '...');
       console.log('저장된 사용자:', localStorage.getItem('user'));
       
-      // 성공 메시지 표시
-      alert('회원가입이 완료되었습니다!');
-      
-      // 즉시 메인 페이지로 강제 이동
+      // 성공 메시지 표시 (alert 대신 더 나은 UX)
       console.log('=== 메인 페이지로 이동 시작 ===');
-      console.log('현재 URL:', window.location.href);
       
-      // 여러 방법으로 리다이렉트 시도
-      try {
-        // 1. window.location.replace 사용
-        console.log('window.location.replace 시도');
-        window.location.replace('/');
-      } catch (replaceError) {
-        console.error('window.location.replace 실패:', replaceError);
-        
-        try {
-          // 2. window.location.href 사용
-          console.log('window.location.href 시도');
-          window.location.href = '/';
-        } catch (hrefError) {
-          console.error('window.location.href 실패:', hrefError);
-          
-          // 3. router.push 사용
-          console.log('router.push 시도');
-          router.push('/');
-        }
-      }
+      // 즉시 메인 페이지로 이동 (alert 제거)
+      window.location.href = '/';
       
     } catch (error: any) {
       console.error('=== 회원가입 오류 ===');
@@ -173,10 +179,19 @@ export default function SocialSignupPage() {
       console.error('오류 상태:', error.response?.status);
       
       if (error.response?.status === 400) {
-        setError(error.response.data.error || '잘못된 요청입니다.');
+        const errorMessage = error.response.data.error || '잘못된 요청입니다.';
+        setError(errorMessage);
+        
+        // 토큰 만료 에러인 경우 로그인 페이지로 리다이렉트
+        if (errorMessage.includes('토큰이 만료') || errorMessage.includes('유효하지 않은 토큰')) {
+          setTimeout(() => {
+            alert('인증 시간이 만료되었습니다. 다시 로그인해주세요.');
+            window.location.href = '/login';
+          }, 2000);
+        }
       } else if (error.response?.status === 500) {
         setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      } else if (error.message.includes('fetch')) {
+      } else if (error.message.includes('fetch') || error.message.includes('network')) {
         setError('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
       } else {
         setError(error.response?.data?.error || '회원가입에 실패했습니다.');

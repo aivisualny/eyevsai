@@ -219,7 +219,7 @@ router.get('/google/callback', async (req, res) => {
         socialId: profile.id,
         avatar: profile.picture || null,
         temp: true
-      }, process.env.JWT_SECRET, { expiresIn: '10m' }); // 10분 유효
+      }, process.env.JWT_SECRET, { expiresIn: '30m' }); // 30분으로 연장
       
       const userData = encodeURIComponent(JSON.stringify({
         email: profile.email,
@@ -341,7 +341,7 @@ router.get('/facebook/callback', async (req, res) => {
         socialId: profile.id,
         avatar: profile.picture?.data?.url || null,
         temp: true
-      }, process.env.JWT_SECRET, { expiresIn: '10m' }); // 10분 유효
+      }, process.env.JWT_SECRET, { expiresIn: '30m' }); // 30분으로 연장
       
       const userData = encodeURIComponent(JSON.stringify({
         email: profile.email,
@@ -462,7 +462,7 @@ router.get('/kakao/callback', async (req, res) => {
         socialId: profile.id.toString(),
         avatar: profile.properties?.profile_image || null,
         temp: true
-      }, process.env.JWT_SECRET, { expiresIn: '10m' }); // 10분 유효
+      }, process.env.JWT_SECRET, { expiresIn: '30m' }); // 30분으로 연장
       
       const userData = encodeURIComponent(JSON.stringify({
         email: profile.kakao_account?.email,
@@ -540,6 +540,13 @@ router.get('/check-username/:username', async (req, res) => {
     });
   } catch (error) {
     console.error('Username check error:', error);
+    // 데이터베이스 연결 오류 등 심각한 오류인 경우
+    if (error.name === 'MongoNetworkError' || error.name === 'MongoServerSelectionError') {
+      return res.status(503).json({ 
+        available: false, 
+        error: '서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.' 
+      });
+    }
     res.status(500).json({ 
       available: false, 
       error: '사용자명 확인 중 오류가 발생했습니다.' 
